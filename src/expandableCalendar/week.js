@@ -136,6 +136,7 @@ class Week extends Component {
           onLongPress={this.props.onDayPress}
           date={dateAsObject}
           marking={this.getDateMarking(day)}
+          disabled={state === 'disabled'}
         >
           {dayDate}
         </DayComp>
