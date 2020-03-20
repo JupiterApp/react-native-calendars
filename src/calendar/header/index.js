@@ -187,7 +187,7 @@ class CalendarHeader extends Component {
                 // accessible={false} // not working
                 // importantForAccessibility='no'
               >
-                {day}
+                {day.toUpperCase()}
               </Text>
             ))}
           </View>
