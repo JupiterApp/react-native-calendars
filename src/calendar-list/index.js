@@ -201,6 +201,10 @@ class CalendarList extends Component {
       this.props.onVisibleMonthsChange(visibleMonths);
     }
 
+    if (this.props.onMonthChange) {
+      this.props.onMonthChange(parseDate(visibleMonths[0]))
+    }
+
     this.setState({
       rows: newrows,
       currentMonth: parseDate(visibleMonths[0])

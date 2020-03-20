@@ -377,6 +377,12 @@ class ExpandableCalendar extends Component {
     }
   }
 
+  onMonthChange = (date) => {
+    if (this.props.onMonthChange) {
+      this.props.onMonthChange(date.toString('MMMM'))
+    }
+  }
+
   /** Renders */
 
   renderWeekDaysNames() {
@@ -517,6 +523,7 @@ class ExpandableCalendar extends Component {
               hideExtraDays={!horizontal}
               renderArrow={this.renderArrow}
               staticHeader
+              onMonthChange={this.onMonthChange}
             /> 
             {horizontal && this.renderWeekCalendar()}
             {!hideKnob && this.renderKnob()}
