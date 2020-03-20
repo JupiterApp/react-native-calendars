@@ -79,6 +79,8 @@ class Day extends Component {
       containerStyle.push(this.style.today);
       textStyle.push(this.style.todayText);
       dotStyle.push(this.style.todayDot);
+    } else if (this.props.state === '_disabled') {
+      textStyle.push(this.style.extraDisabledText);
     }
 
     return (

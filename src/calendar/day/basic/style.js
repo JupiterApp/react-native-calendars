@@ -40,6 +40,9 @@ export default function styleConstructor(theme={}) {
     disabledText: {
       color: appStyle.textDisabledColor
     },
+    extraDisabledText: {
+      color: appStyle.extraDisabledTextColor
+    },
     dot: {
       width: 4,
       height: 4,

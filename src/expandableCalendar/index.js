@@ -447,6 +447,13 @@ class ExpandableCalendar extends Component {
   }
 
   renderKnob() {
+    if (this.props.renderKnob)  {
+      return (
+        <View style={this.style.knobContainer} pointerEvents={'none'}>
+          {this.props.renderKnob()}
+        </View>
+      )
+    }
     // TODO: turn to TouchableOpacity with onPress that closes it
     return (
       <View style={this.style.knobContainer} pointerEvents={'none'}>
