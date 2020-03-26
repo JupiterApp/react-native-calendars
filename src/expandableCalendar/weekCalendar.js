@@ -113,24 +113,24 @@ class WeekCalendar extends Component {
     if (this.props.calendarMode === 'schedule') return;
     const newPage = Math.round(x / this.containerWidth);
     
-    if (this.page !== newPage) {
-      const {items} = this.state;
-      this.page = newPage;
+    // if (this.page !== newPage) {
+    //   const {items} = this.state;
+    //   this.page = newPage;
 
-      _.invoke(this.props.context, 'setDate', items[this.page], UPDATE_SOURCES.WEEK_SCROLL);
+    //   _.invoke(this.props.context, 'setDate', items[this.page], UPDATE_SOURCES.WEEK_SCROLL);
 
-      if (this.page === items.length - 1) {
-        for (let i = 0; i <= NUMBER_OF_PAGES; i++) {
-          items[i] = items[i + NUMBER_OF_PAGES];
-        }
-        this.setState({items: [...items]});
-      } else if (this.page === 0) {
-        for (let i = items.length - 1; i >= NUMBER_OF_PAGES; i--) {
-          items[i] = items[i - NUMBER_OF_PAGES];
-        }
-        this.setState({items: [...items]});
-      }
-    }
+    //   if (this.page === items.length - 1) {
+    //     for (let i = 0; i <= NUMBER_OF_PAGES; i++) {
+    //       items[i] = items[i + NUMBER_OF_PAGES];
+    //     }
+    //     this.setState({items: [...items]});
+    //   } else if (this.page === 0) {
+    //     for (let i = items.length - 1; i >= NUMBER_OF_PAGES; i--) {
+    //       items[i] = items[i - NUMBER_OF_PAGES];
+    //     }
+    //     this.setState({items: [...items]});
+    //   }
+    // }
   }
 
   onMomentumScrollEnd = () => {

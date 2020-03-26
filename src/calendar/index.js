@@ -304,7 +304,6 @@ class Calendar extends Component {
       }
     }
 
-    console.log('in calendar', this.props.markedDates);
     return (
       <View 
         style={[this.style.container, this.props.style]}

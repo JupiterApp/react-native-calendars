@@ -158,21 +158,21 @@ class ExpandableCalendar extends Component {
 
   scrollPage(next) {
     if (this.props.horizontal) {
-      const d = parseDate(this.props.context.date);
+      // const d = parseDate(this.props.context.date);
       
-      if (this.state.position === POSITIONS.OPEN) {
-        d.setDate(1);
-        d.addMonths(next ? 1 : -1);
-      } else {
-        const {firstDay} = this.props;
-        let dayOfTheWeek = d.getDay();
-        if (dayOfTheWeek < firstDay && firstDay > 0) {
-          dayOfTheWeek = 7 + dayOfTheWeek;
-        }
-        const firstDayOfWeek = (next ? 7 : -7) - dayOfTheWeek + firstDay;
-        d.addDays(firstDayOfWeek);
-      }
-      _.invoke(this.props.context, 'setDate', this.getDateString(d), UPDATE_SOURCES.PAGE_SCROLL); 
+      // if (this.state.position === POSITIONS.OPEN) {
+      //   d.setDate(1);
+      //   d.addMonths(next ? 1 : -1);
+      // } else {
+      //   const {firstDay} = this.props;
+      //   let dayOfTheWeek = d.getDay();
+      //   if (dayOfTheWeek < firstDay && firstDay > 0) {
+      //     dayOfTheWeek = 7 + dayOfTheWeek;
+      //   }
+      //   const firstDayOfWeek = (next ? 7 : -7) - dayOfTheWeek + firstDay;
+      //   d.addDays(firstDayOfWeek);
+      // }
+      // _.invoke(this.props.context, 'setDate', null, UPDATE_SOURCES.PAGE_SCROLL); 
     }
   }
 

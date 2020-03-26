@@ -86,15 +86,15 @@ class AgendaList extends Component {
   }
 
   onViewableItemsChanged = ({viewableItems}) => {
-    if (viewableItems && !this.sectionScroll) {
-      const topSection = _.get(viewableItems[0], 'section.title');
-      if (topSection && topSection !== this._topSection) {
-        this._topSection = topSection;
-        if (this.didScroll) { // to avoid setDate() on first load (while setting the initial context.date value)
-          _.invoke(this.props.context, 'setDate', this._topSection, UPDATE_SOURCES.LIST_DRAG);
-        }
-      }
-    }
+    // if (viewableItems && !this.sectionScroll) {
+    //   const topSection = _.get(viewableItems[0], 'section.title');
+    //   if (topSection && topSection !== this._topSection) {
+    //     this._topSection = topSection;
+    //     if (this.didScroll) { // to avoid setDate() on first load (while setting the initial context.date value)
+    //       _.invoke(this.props.context, 'setDate', this._topSection, UPDATE_SOURCES.LIST_DRAG);
+    //     }
+    //   }
+    // }
   }
 
   onScroll = (event) => {
