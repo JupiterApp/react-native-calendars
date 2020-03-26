@@ -25,7 +25,8 @@ export default function styleConstructor(theme = {}) {
       })
     },
     container: {
-      backgroundColor: appStyle.calendarBackground
+      backgroundColor: appStyle.calendarBackground,
+      paddingVertical: 10
     },
     knobContainer: {
       position: 'absolute',
@@ -94,12 +95,15 @@ export default function styleConstructor(theme = {}) {
       justifyContent: 'space-around'
     },
     dayHeader: {
-      width: 32,
+      width: 35,
       textAlign: 'center',
       fontSize: appStyle.textDayHeaderFontSize,
       fontFamily: appStyle.textDayHeaderFontFamily,
       fontWeight: appStyle.textDayHeaderFontWeight,
       color: appStyle.textSectionTitleColor
+    },
+    dayHeaderSelected: {
+      color: appStyle.selectedDayTextColor
     },
     arrowImage: {
       tintColor: appStyle.arrowColor

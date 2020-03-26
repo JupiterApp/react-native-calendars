@@ -59,7 +59,9 @@ class ExpandableCalendar extends Component {
     /** whether to have shadow/elevation for the calendar */
     allowShadow: PropTypes.bool,
     /** whether to disable the week scroll in closed position */
-    disableWeekScroll: PropTypes.bool
+    disableWeekScroll: PropTypes.bool,
+    /** custom calendar mode enums from Jupiter */
+    calendarMode: PropTypes.oneOf(['appointment', 'schedule'])
   }
 
   static defaultProps = {
@@ -290,6 +292,7 @@ class ExpandableCalendar extends Component {
       this._height = toValue || newValue;
       isOpen = this._height >= threshold; // re-check after this._height was set
 
+
       Animated.spring(deltaY, {
         toValue: this._height,
         speed: SPEED,
@@ -310,7 +313,8 @@ class ExpandableCalendar extends Component {
 
   setPosition() {
     const isClosed = this._height === this.closedHeight;
-    this.setState({position: isClosed ? POSITIONS.CLOSED : POSITIONS.OPEN});
+    const position = isClosed ? POSITIONS.CLOSED : POSITIONS.OPEN;
+    this.setState({position});
   }
   
   resetWeekCalendarOpacity(isOpen) {
@@ -379,7 +383,7 @@ class ExpandableCalendar extends Component {
 
   onMonthChange = (date) => {
     if (this.props.onMonthChange) {
-      this.props.onMonthChange(date.toString('MMMM'))
+      this.props.onMonthChange(date.toString('MMMM'));
     }
   }
 
@@ -422,7 +426,7 @@ class ExpandableCalendar extends Component {
 
   renderWeekCalendar() {
     const {position} = this.state;
-    const {disableWeekScroll} = this.props;
+    const {calendarMode, disableWeekScroll} = this.props;
     const WeekComponent = disableWeekScroll ? Week : WeekCalendar;
 
     return (
@@ -430,9 +434,10 @@ class ExpandableCalendar extends Component {
         ref={e => this.weekCalendar = e}
         style={{
           position: 'absolute', 
-          left: 0, 
+          left: -1, 
           right: 0, 
-          top: HEADER_HEIGHT + (commons.isAndroid ? 8 : 4), // align row on top of calendar's first row
+          top: calendarMode === 'schedule' ? 20 :  HEADER_HEIGHT + (commons.isAndroid ? 8 : 4),
+          // top: HEADER_HEIGHT + (commons.isAndroid ? 8 : 4), // align row on top of calendar's first row
           opacity: position === POSITIONS.OPEN ? 0 : 1
         }}
         pointerEvents={position === POSITIONS.CLOSED ? 'auto' : 'none'}
@@ -458,7 +463,7 @@ class ExpandableCalendar extends Component {
         <View style={this.style.knobContainer} pointerEvents={'none'}>
           {this.props.renderKnob()}
         </View>
-      )
+      );
     }
     // TODO: turn to TouchableOpacity with onPress that closes it
     return (
@@ -524,6 +529,7 @@ class ExpandableCalendar extends Component {
               renderArrow={this.renderArrow}
               staticHeader
               onMonthChange={this.onMonthChange}
+              calendarMode={this.props.calendarMode}
             /> 
             {horizontal && this.renderWeekCalendar()}
             {!hideKnob && this.renderKnob()}

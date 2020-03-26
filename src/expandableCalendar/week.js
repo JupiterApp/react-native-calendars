@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View} from 'react-native';
+import {View, Text} from 'react-native';
 import PropTypes from 'prop-types';
 import XDate from 'xdate';
 
@@ -128,6 +128,18 @@ class Week extends Component {
 
     return (
       <View style={{flex: 1, alignItems: 'center'}} key={id}>
+        <View style={[this.style.week, {flex: 1, zIndex: 200}]}>
+          <Text 
+            allowFontScaling={false} 
+            style={[this.style.dayHeader, this.getDateMarking(day).selected && this.style.dayHeaderSelected]} 
+            numberOfLines={1} 
+            accessibilityLabel={''}
+          // accessible={false} // not working
+          // importantForAccessibility='no'
+          >
+            {day.toString('ddd').toUpperCase()}
+          </Text>
+        </View>
         <DayComp
           testID={`${SELECT_DATE_SLOT}-${dateAsObject.dateString}`}
           state={state}
@@ -159,9 +171,14 @@ class Week extends Component {
     //   week.unshift(this.renderWeekNumber(item[item.length - 1].getWeek()));
     // }
 
+    const weekStyle = [this.style.week, this.props.style];
+    // if (this.props.calendarMode === 'schedule') {
+    //   weekStyle.push({paddingRight: 0, paddingLeft: 0});
+    // }
+
     return (
       <View style={this.style.container}>
-        <View style={[this.style.week, this.props.style]}>{week}</View>
+        <View style={weekStyle}>{week}</View>
       </View>
     );
   }

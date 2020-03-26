@@ -145,6 +145,7 @@ class CalendarHeader extends Component {
 
     const webProps = Platform.OS === 'web' ? {'aria-level': this.props.webAriaLevel} : {};
 
+    console.log('this.props.', this.props.markedDates);
     return (
       <View 
         style={this.props.style} 
@@ -181,7 +182,7 @@ class CalendarHeader extends Component {
               <Text
                 allowFontScaling={false}
                 key={idx}
-                style={this.style.dayHeader}
+                style={[this.style.dayHeader, this.getDateMarking(day) && this.style.dayHeaderSelected]}
                 numberOfLines={1}
                 accessibilityLabel={''}
                 // accessible={false} // not working
@@ -194,6 +195,18 @@ class CalendarHeader extends Component {
         }
       </View>
     );
+  }
+
+  getDateMarking = (day) => {
+    const {markedDates} = this.props;
+    if (!markedDates) {
+      return false;
+    }
+
+    let weekDaysNames = weekDayNames(this.props.firstDay);
+    const selectedDate = Object.keys(markedDates)[0].toString('ddd');
+    if (weekDaysNames[XDate(selectedDate).getDay()] === day) return true;
+    return false;
   }
 
   onAccessibilityAction = event => {

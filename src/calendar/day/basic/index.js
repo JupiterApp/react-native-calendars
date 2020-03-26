@@ -11,7 +11,7 @@ class Day extends Component {
   
   static propTypes = {
     // TODO: disabled props should be removed
-    state: PropTypes.oneOf(['disabled', 'today', '']),
+    state: PropTypes.oneOf(['disabled', 'today', '_disabled', 'not-disabled', '']),
     // Specify theme properties to override specific styles for calendar parts. Default = {}
     theme: PropTypes.object,
     marking: PropTypes.any,

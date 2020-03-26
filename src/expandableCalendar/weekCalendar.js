@@ -110,6 +110,7 @@ class WeekCalendar extends Component {
   }
 
   onScroll = ({nativeEvent: {contentOffset: {x}}}) => {
+    if (this.props.calendarMode === 'schedule') return;
     const newPage = Math.round(x / this.containerWidth);
     
     if (this.page !== newPage) {
@@ -133,6 +134,7 @@ class WeekCalendar extends Component {
   }
 
   onMomentumScrollEnd = () => {
+    if (this.props.calendarMode === 'schedule') return;
     const {items} = this.state;
     const isFirstPage = this.page === 0;
     const isLastPage = this.page === items.length - 1;
@@ -222,7 +224,11 @@ class WeekCalendar extends Component {
           getItemLayout={this.getItemLayout}
           onScroll={this.onScroll}
           onMomentumScrollEnd={this.onMomentumScrollEnd}
+          // snapToInterval={35}
+          // decelerationRate={0}
+          // snapToAlignment={'center'}
         />
+
       </View>
     );
   }

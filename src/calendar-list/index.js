@@ -51,7 +51,9 @@ class CalendarList extends Component {
     /** Whether to use static header that will not scroll with the list (horizontal only) */
     staticHeader: PropTypes.bool,
     /** A custom key extractor for the generated calendar months */
-    keyExtractor: PropTypes.func
+    keyExtractor: PropTypes.func,
+    /** Jupiter calendar mode */
+    calendarMode: PropTypes.oneOf(['appointment', 'schedule'])
   }
 
   static defaultProps = {
@@ -202,7 +204,7 @@ class CalendarList extends Component {
     }
 
     if (this.props.onMonthChange) {
-      this.props.onMonthChange(parseDate(visibleMonths[0]))
+      this.props.onMonthChange(parseDate(visibleMonths[0]));
     }
 
     this.setState({
@@ -290,6 +292,7 @@ class CalendarList extends Component {
           testID={STATIC_HEADER}
           accessibilityElementsHidden={true} // iOS
           importantForAccessibility={'no-hide-descendants'} // Android
+          markedDates={this.props.markedDates}
         />
       );
     }
@@ -325,7 +328,7 @@ class CalendarList extends Component {
           onEndReached={this.props.onEndReached}
           keyboardShouldPersistTaps={this.props.keyboardShouldPersistTaps}
         />
-        {this.renderStaticHeader()}
+        {this.props.calendarMode === 'appointment' && this.renderStaticHeader()}
       </View>
     );
   }

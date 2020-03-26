@@ -304,6 +304,7 @@ class Calendar extends Component {
       }
     }
 
+    console.log('in calendar', this.props.markedDates);
     return (
       <View 
         style={[this.style.container, this.props.style]}
@@ -329,7 +330,9 @@ class Calendar extends Component {
           webAriaLevel={this.props.webAriaLevel}
           disableArrowLeft={this.props.disableArrowLeft}
           disableArrowRight={this.props.disableArrowRight}
+          markedDates={this.props.markedDates}
         />
+
         <View style={this.style.monthView}>{weeks}</View>
       </View>);
   }
