@@ -25,8 +25,7 @@ export default function styleConstructor(theme = {}) {
       })
     },
     container: {
-      backgroundColor: appStyle.calendarBackground,
-      paddingVertical: 10
+      backgroundColor: appStyle.calendarBackground
     },
     knobContainer: {
       position: 'absolute',

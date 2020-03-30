@@ -32,7 +32,7 @@ const BOUNCINESS = 6;
 const CLOSED_HEIGHT = 120; // header + 1 week
 const WEEK_HEIGHT = 46;
 const KNOB_CONTAINER_HEIGHT = 20;
-const HEADER_HEIGHT = 68;
+const HEADER_HEIGHT = 35;
 const DAY_NAMES_PADDING = 24;
 
 /**
@@ -434,10 +434,9 @@ class ExpandableCalendar extends Component {
         ref={e => this.weekCalendar = e}
         style={{
           position: 'absolute', 
-          left: -1, 
+          left: calendarMode === 'schedule' ? 0 : -2.5,
           right: 0, 
-          top: calendarMode === 'schedule' ? 20 :  HEADER_HEIGHT + (commons.isAndroid ? 8 : 4),
-          // top: HEADER_HEIGHT + (commons.isAndroid ? 8 : 4), // align row on top of calendar's first row
+          top: calendarMode === 'schedule' ? 40 : HEADER_HEIGHT + (commons.isAndroid ? 8 : 4), // align row on top of calendar's first row
           opacity: position === POSITIONS.OPEN ? 0 : 1
         }}
         pointerEvents={position === POSITIONS.CLOSED ? 'auto' : 'none'}
