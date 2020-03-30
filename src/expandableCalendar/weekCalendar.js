@@ -55,7 +55,7 @@ class WeekCalendar extends Component {
     
     if (date !== prevProps.context.date && updateSource !== UPDATE_SOURCES.WEEK_SCROLL) {
       this.setState({items: this.getDatesArray()});
-      this.list.current.scrollToIndex({animated: false, index: NUMBER_OF_PAGES});
+      this.list.current.scrollToIndex({animated: false, index: 0});
     }
   }
 
@@ -65,7 +65,7 @@ class WeekCalendar extends Component {
 
   getDatesArray() {
     const array = [];
-    for (let index = -NUMBER_OF_PAGES; index <= NUMBER_OF_PAGES; index++) {
+    for (let index = 0; index <= NUMBER_OF_PAGES; index++) {
       const d = this.getDate(index);
       array.push(d);
     }
@@ -220,7 +220,6 @@ class WeekCalendar extends Component {
           scrollEnabled
           renderItem={this.renderItem}
           keyExtractor={this.keyExtractor}
-          initialScrollIndex={NUMBER_OF_PAGES}
           getItemLayout={this.getItemLayout}
           onScroll={this.onScroll}
           onMomentumScrollEnd={this.onMomentumScrollEnd}
