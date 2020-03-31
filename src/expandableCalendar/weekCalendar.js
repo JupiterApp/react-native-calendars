@@ -5,10 +5,11 @@ import PropTypes from 'prop-types';
 import XDate from 'xdate';
 
 import styleConstructor from './style';
+import {xdateToData, parseDate} from '../interface';
 import CalendarList from '../calendar-list';
 import Week from '../expandableCalendar/week';
 import asCalendarConsumer from './asCalendarConsumer';
-import {weekDayNames} from '../dateutils';
+import {weekDayNames, sameDate} from '../dateutils';
 
 
 const commons = require('./commons');
@@ -54,8 +55,15 @@ class WeekCalendar extends Component {
     const {updateSource, date} = this.props.context;
     
     if (date !== prevProps.context.date && updateSource !== UPDATE_SOURCES.WEEK_SCROLL) {
-      this.setState({items: this.getDatesArray()});
-      this.list.current.scrollToIndex({animated: false, index: 0});
+      const items = this.getDatesArray();
+      this.setState({items});
+      const days = items.map(block => this.getWeek(block));
+      days.forEach((dayArr, idx) => {
+        if (dayArr.find(day => sameDate(XDate(this.props.current), day))) {
+          currentDateIdx = idx;
+        }
+      });
+      this.list.current.scrollToIndex({animated: false, index: currentDateIdx});
     }
   }
 
@@ -63,12 +71,56 @@ class WeekCalendar extends Component {
     return this.props.calendarWidth || commons.screenWidth;
   }
 
+  getWeek(date) {
+    if (date) {
+      const current = parseDate(date);
+      const daysArray = [current];
+      let dayOfTheWeek = current.getDay() - this.props.firstDay;
+      if (dayOfTheWeek < 0) { // to handle firstDay > 0
+        dayOfTheWeek = 7 + dayOfTheWeek;
+      }
+      
+      let newDate = current;
+      let index = dayOfTheWeek - 1;
+      while (index >= 0) {
+        newDate = parseDate(newDate).addDays(-1);
+        daysArray.unshift(newDate);
+        index -= 1;
+      }
+
+      newDate = current;
+      index = dayOfTheWeek + 1;
+      while (index < 7) {
+        newDate = parseDate(newDate).addDays(1);
+        daysArray.push(newDate);
+        index += 1;
+      }
+      return daysArray;
+    }
+  }
+
   getDatesArray() {
-    const array = [];
-    for (let index = 0; index <= NUMBER_OF_PAGES; index++) {
+    let array = []; 
+    for (let index = -NUMBER_OF_PAGES; index <= NUMBER_OF_PAGES; index++) {
       const d = this.getDate(index);
       array.push(d);
     }
+
+    let dateIsTodayIdx = -1;
+    let currentDateIdx = 0;
+    const days = array.map(block => this.getWeek(block));
+    days.forEach((dayArr, idx) => {
+      if (dayArr.find(day => sameDate(day, XDate()))) {
+        dateIsTodayIdx = idx;
+      }
+    });
+ 
+
+    if (dateIsTodayIdx > 0) {
+      const newArr = array.slice(dateIsTodayIdx);
+      return newArr;
+    }
+
     return array;
   }
 
