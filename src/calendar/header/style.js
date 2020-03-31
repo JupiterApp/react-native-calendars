@@ -38,13 +38,15 @@ export default function(theme={}) {
     },
     dayHeader: {
       marginTop: 2,
-      marginBottom: 7,
+      marginLeft: 3,
+      marginBottom: 5,
       width: 35,
       textAlign: 'center',
       fontSize: appStyle.textDayHeaderFontSize,
       fontFamily: appStyle.textDayHeaderFontFamily,
       fontWeight: appStyle.textDayHeaderFontWeight,
-      color: appStyle.textSectionTitleColor
+      color: appStyle.textSectionTitleColor,
+      paddingRight: 2
     },
     dayHeaderSelected: {
       color: appStyle.selectedDayTextColor

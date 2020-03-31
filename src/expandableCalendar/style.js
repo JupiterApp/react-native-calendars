@@ -31,7 +31,7 @@ export default function styleConstructor(theme = {}) {
       position: 'absolute',
       left: 0,
       right: 0,
-      height: 24,
+      height: 22,
       bottom: 0,
       alignItems: 'center',
       justifyContent: 'center',
@@ -99,7 +99,8 @@ export default function styleConstructor(theme = {}) {
       fontSize: appStyle.textDayHeaderFontSize,
       fontFamily: appStyle.textDayHeaderFontFamily,
       fontWeight: appStyle.textDayHeaderFontWeight,
-      color: appStyle.textSectionTitleColor
+      color: appStyle.textSectionTitleColor,
+      paddingRight: 2
     },
     dayHeaderSelected: {
       color: appStyle.selectedDayTextColor
