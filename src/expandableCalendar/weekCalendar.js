@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import XDate from 'xdate';
 
 import styleConstructor from './style';
-import {xdateToData, parseDate} from '../interface';
+import {parseDate} from '../interface';
 import CalendarList from '../calendar-list';
 import Week from '../expandableCalendar/week';
 import asCalendarConsumer from './asCalendarConsumer';
@@ -56,6 +56,7 @@ class WeekCalendar extends Component {
     
     if (date !== prevProps.context.date && updateSource !== UPDATE_SOURCES.WEEK_SCROLL) {
       const items = this.getDatesArray();
+      let currentDateIdx = 0;
       this.setState({items});
       const days = items.map(block => this.getWeek(block));
       days.forEach((dayArr, idx) => {
@@ -99,22 +100,41 @@ class WeekCalendar extends Component {
     }
   }
 
+  getDateMaxForTimeSelection () {
+    let endReached = false;
+    let counter = 0;
+    let array = [];
+    while (!endReached) {
+      const d = this.getDate(counter);
+      const days = array.map(block => this.getWeek(block));
+      days.forEach((dayArr) => {
+        if (dayArr.find(day => sameDate(day, XDate(this.props.maxDate)))) {
+          endReached = true;
+          return;
+        }
+      });
+      array.push(d);
+      counter++;
+    }
+
+    return array;
+  }
+
   getDatesArray() {
-    let array = []; 
+    if (this.props.calendarMode === 'timeSelection') return this.getDateMaxForTimeSelection();
+    let array = [];
     for (let index = -NUMBER_OF_PAGES; index <= NUMBER_OF_PAGES; index++) {
       const d = this.getDate(index);
       array.push(d);
     }
 
     let dateIsTodayIdx = -1;
-    let currentDateIdx = 0;
     const days = array.map(block => this.getWeek(block));
     days.forEach((dayArr, idx) => {
       if (dayArr.find(day => sameDate(day, XDate()))) {
         dateIsTodayIdx = idx;
       }
     });
- 
 
     if (dateIsTodayIdx > 0) {
       const newArr = array.slice(dateIsTodayIdx);
@@ -162,14 +182,14 @@ class WeekCalendar extends Component {
   }
 
   onScroll = ({nativeEvent: {contentOffset: {x}}}) => {
-    if (this.props.calendarMode === 'schedule') return;
-    const newPage = Math.round(x / this.containerWidth);
+    if (this.props.calendarMode === 'schedule' || this.props.calendarMode === 'timeSelection') return;
+    // const newPage = Math.round(x / this.containerWidth);
     
     // if (this.page !== newPage) {
     //   const {items} = this.state;
     //   this.page = newPage;
 
-    //   _.invoke(this.props.context, 'setDate', items[this.page], UPDATE_SOURCES.WEEK_SCROLL);
+    //   // _.invoke(this.props.context, 'setDate', items[this.page], UPDATE_SOURCES.WEEK_SCROLL);
 
     //   if (this.page === items.length - 1) {
     //     for (let i = 0; i <= NUMBER_OF_PAGES; i++) {
@@ -186,7 +206,7 @@ class WeekCalendar extends Component {
   }
 
   onMomentumScrollEnd = () => {
-    if (this.props.calendarMode === 'schedule') return;
+    if (this.props.calendarMode === 'schedule' || this.props.calendarMode === 'timeSelection') return;
     const {items} = this.state;
     const isFirstPage = this.page === 0;
     const isLastPage = this.page === items.length - 1;

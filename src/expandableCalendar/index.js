@@ -61,7 +61,7 @@ class ExpandableCalendar extends Component {
     /** whether to disable the week scroll in closed position */
     disableWeekScroll: PropTypes.bool,
     /** custom calendar mode enums from Jupiter */
-    calendarMode: PropTypes.oneOf(['appointment', 'schedule'])
+    calendarMode: PropTypes.oneOf(['appointment', 'schedule', 'timeSelection'])
   }
 
   static defaultProps = {
