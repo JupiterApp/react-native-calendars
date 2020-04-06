@@ -15,6 +15,7 @@ import MultiPeriodDay from '../calendar/day/multi-period';
 import SingleDay from '../calendar/day/custom';
 import Calendar from '../calendar';
 
+const commons = require('./commons');
 
 const EmptyArray = [];
 
@@ -125,10 +126,12 @@ class Week extends Component {
     const DayComp = this.getDayComponent();
     const dayDate = day.getDate();
     const dateAsObject = xdateToData(day);
+    const WIDTH = (commons.screenWidth - 30) / 7;
+    const containerStyle = this.props.calendarMode === 'schedule' ? {width: WIDTH, alignItems: 'center'} : {flex: 1, alignItems: 'center'};
 
     return (
-      <View style={{flex: 1, alignItems: 'center'}} key={id}>
-        <View style={[this.style.week, {flex: 1, zIndex: 200}]}>
+      <View style={containerStyle} key={id}>
+        <View style={[this.style.week]}>
           <Text 
             allowFontScaling={false} 
             style={[this.style.dayHeader, this.getDateMarking(day).selected && this.style.dayHeaderSelected]} 
@@ -157,9 +160,15 @@ class Week extends Component {
   }
 
   render() {
-    const {current} = this.props;
-    const dates = this.getWeek(current);
+    const {current, calendarMode} = this.props;
+    const minDate = parseDate(this.props.minDate);
+    let dates = this.getWeek(current);
     const week = [];
+
+    if (calendarMode === 'schedule') {
+      const originalDates = dates;
+      dates = originalDates.filter(day => dateutils.isGTE(day, minDate));
+    }
     
     if (dates) {
       dates.forEach((day, id) => {
@@ -172,9 +181,6 @@ class Week extends Component {
     // }
 
     const weekStyle = [this.style.week, this.props.style];
-    // if (this.props.calendarMode === 'schedule') {
-    //   weekStyle.push({paddingRight: 0, paddingLeft: 0});
-    // }
 
     return (
       <View style={this.style.container}>

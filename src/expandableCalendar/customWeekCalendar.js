@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React, {Component} from 'react';
-import {FlatList, View, Text} from 'react-native';
+import {Animated, FlatList, View, Text} from 'react-native';
 import PropTypes from 'prop-types';
 import XDate from 'xdate';
 
@@ -14,13 +14,17 @@ import {weekDayNames, sameDate} from '../dateutils';
 
 const commons = require('./commons');
 const UPDATE_SOURCES = commons.UPDATE_SOURCES;
-const NUMBER_OF_PAGES = 2; // must be a positive number
+const NUMBER_OF_PAGES = 2; // must be a positive numbee
+const INSET_PADDING = 15;
+
+
+const EmptyArray = [];
 
 /**
  * @description: Week calendar component
  * @example: https://github.com/wix/react-native-calendars/blob/master/example/src/screens/expandableCalendar.js
  */
-class WeekCalendar extends Component {
+class CustomWeekCalendar extends Component {
   static displayName = 'WeekCalendar';
 
   static propTypes = {
@@ -36,6 +40,7 @@ class WeekCalendar extends Component {
   static defaultProps = {
     firstDay: 0,
     allowShadow: true
+
   }
 
   constructor(props) {
@@ -47,12 +52,20 @@ class WeekCalendar extends Component {
     this.page = NUMBER_OF_PAGES;
 
     this.state = {
-      items: this.getDatesArray()
+      items: this.getDatesArray(),
+      leftPosition: new Animated.Value(0),
+      leftPositionIndex: 0,
+      firstDateVisible: this.props.minDate
     };
+  }
+
+  componentDidMount () {
+    this.state.leftPosition.setValue(INSET_PADDING + 5);
   }
 
   componentDidUpdate(prevProps) {
     const {updateSource, date} = this.props.context;
+   
     
     if (date !== prevProps.context.date && updateSource !== UPDATE_SOURCES.WEEK_SCROLL) {
       const items = this.getDatesArray();
@@ -63,6 +76,7 @@ class WeekCalendar extends Component {
           currentDateIdx = idx;
         }
       });
+      const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7 + 1;
       this.list.current.scrollToIndex({animated: false, index: currentDateIdx});
     }
   }
@@ -71,11 +85,12 @@ class WeekCalendar extends Component {
     return this.props.calendarWidth || commons.screenWidth;
   }
 
-  getWeek(date) {
+  getWeek(date , firstDate) {
+    const firstDay = firstDate || this.props.firstDay;
     if (date) {
       const current = parseDate(date);
       const daysArray = [current];
-      let dayOfTheWeek = current.getDay() - this.props.firstDay;
+      let dayOfTheWeek = current.getDay() - firstDay;
       if (dayOfTheWeek < 0) { // to handle firstDay > 0
         dayOfTheWeek = 7 + dayOfTheWeek;
       }
@@ -120,32 +135,13 @@ class WeekCalendar extends Component {
   }
 
   getDatesArray() {
-    if (this.props.calendarMode === 'timeSelection') return this.getDateMaxForTimeSelection();
-    let array = [];
-    for (let index = -NUMBER_OF_PAGES; index <= NUMBER_OF_PAGES; index++) {
-      const d = this.getDate(index);
-      array.push(d);
-    }
-
-    let dateIsTodayIdx = -1;
-    let currentDateIdx = 0;
-    const days = array.map(block => this.getWeek(block));
-    days.forEach((dayArr, idx) => {
-      if (dayArr.find(day => sameDate(day, XDate()))) {
-        dateIsTodayIdx = idx;
-      }
-    });
-
-    if (dateIsTodayIdx > 0) {
-      const newArr = array.slice(dateIsTodayIdx);
-      return newArr;
-    }
-
-    return array;
+    return  this.getDateMaxForTimeSelection();
   }
 
   getDate(weekIndex) {
-    const {current, context, firstDay} = this.props;
+    const {current, context} = this.props;
+    let firstDay = XDate(current).getDay();
+    if (firstDay === 0) firstDay = 7;
     const d = XDate(current || context.date);
     // get the first day of the week as date (for the on scroll mark)
     let dayOfTheWeek = d.getDay();
@@ -168,67 +164,72 @@ class WeekCalendar extends Component {
       const marked = _.cloneDeep(markedDates);
 
       if (marked[context.date]) {
-        marked[context.date].selected = true;
+        marked[context.date].selected = false;
       } else {
-        marked[context.date] = {selected: true};
+        marked[context.date] = {selected: false};
       }
       return marked;
     } 
-    return {[context.date]: {selected: true}};
+    return {[context.date]: {selected: false}};
   }
 
   onDayPress = (value) => {
-    _.invoke(this.props.context, 'setDate', value.dateString, UPDATE_SOURCES.DAY_PRESS);
+    const DAY_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+    let firstDay = XDate(this.state.firstDateVisible).getDay();
+    if (firstDay === 0) firstDay = 7;
+    const days = this.state.items.map(block => this.getWeek(block, firstDay));
+    let currentDateIdx = 0;
+    let currentDate = '';
+    days.forEach((dayArr, idx) => {
+      if (dayArr.find(day => sameDate(XDate(value.dateString), day))) {
+        currentDate = dayArr.find(day => sameDate(XDate(value.dateString), day));
+        currentDateIdx = dayArr.findIndex(day => sameDate(XDate(value.dateString), day));
+      }
+    });
+    const flattened = _.flattenDeep(days);
+    const found = Math.max(0, flattened.findIndex(day => sameDate(XDate(value.dateString), day)));
+    const previous = Math.max(0, found - 1);
+    
+    let toValue = DAY_WIDTH * currentDateIdx + INSET_PADDING + 2;
+    // If last element in list, we need to adjust invoked date
+    if (currentDateIdx === 6) {
+      currentDateIdx = 5;
+      toValue = DAY_WIDTH * 5 + INSET_PADDING + 2;
+      _.invoke(this.props.context, 'setDate', XDate(flattened[previous]).toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
+    } else {
+      _.invoke(this.props.context, 'setDate', value.dateString, UPDATE_SOURCES.WEEK_SCROLL);
+    }
+    this.setState({leftPositionIndex: currentDateIdx});
+    Animated.timing(this.state.leftPosition, {
+      toValue: toValue,
+      duration: 500
+    }).start();
   }
 
   onScroll = ({nativeEvent: {contentOffset: {x}}}) => {
-    const newPage = Math.round(x / this.containerWidth);
-    
-    if (this.page !== newPage) {
-      const {items} = this.state;
-      this.page = newPage;
-
-      _.invoke(this.props.context, 'setDate', items[this.page], UPDATE_SOURCES.WEEK_SCROLL);
-
-      // if (this.page === items.length - 1) {
-      //   for (let i = 0; i <= NUMBER_OF_PAGES; i++) {
-      //     items[i] = items[i + NUMBER_OF_PAGES];
-      //   }
-      //   this.setState({items: [...items]});
-      // } else if (this.page === 0) {
-      //   for (let i = items.length - 1; i >= NUMBER_OF_PAGES; i--) {
-      //     items[i] = items[i - NUMBER_OF_PAGES];
-      //   }
-      //   this.setState({items: [...items]});
-      // }
-    }
   }
 
-  onMomentumScrollEnd = () => {
-    if (this.props.calendarMode === 'schedule' || this.props.calendarMode === 'timeSelection') return;
-    const {items} = this.state;
-    const isFirstPage = this.page === 0;
-    const isLastPage = this.page === items.length - 1;
+  onMomentumScrollEnd = (e) => {
+    let contentOffset = e.nativeEvent.contentOffset;
+    let viewSize = e.nativeEvent.layoutMeasurement;
 
-    if (isFirstPage || isLastPage) {
-      this.list.current.scrollToIndex({animated: false, index: NUMBER_OF_PAGES});
-      this.page = NUMBER_OF_PAGES;
-      const newWeekArray = this.getDatesArray();
-
-      if (isLastPage) {
-        for (let i = NUMBER_OF_PAGES + 1; i < items.length; i++) {
-          items[i] = newWeekArray[i];
-        }
-      } else {
-        for (let i = 0; i < NUMBER_OF_PAGES; i++) {
-          items[i] = newWeekArray[i];
-        }
+    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+    // Divide the horizontal offset by the width of the view to see which page is visible
+    const pageNum = Math.round(contentOffset.x / SNAP_WIDTH) + 1;
+    const days = _.flatten(this.state.items.map(block => this.getWeek(block)));
+    const firstDateVisible = days[pageNum].toString('yyyy-MM-dd');
+    let firstDay = XDate(firstDateVisible).getDay();
+    if (firstDay === 0) firstDay = 7;
+    const newDays = this.state.items.map(block => this.getWeek(block, firstDay));
+    let currentDateIdx = 0;
+    newDays.forEach((dayArr, idx) => {
+      if (dayArr.find(day => sameDate(XDate(firstDateVisible), day))) {
+        currentDateIdx = idx;
       }
-
-      setTimeout(() => {
-        this.setState({items: [...items]});
-      }, 100);
-    }
+    });
+    let currentDate = newDays[currentDateIdx][this.state.leftPositionIndex];
+    this.setState({firstDateVisible});
+    _.invoke(this.props.context, 'setDate', XDate(currentDate).toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
   }
 
   renderItem = ({item}) => {
@@ -239,9 +240,9 @@ class WeekCalendar extends Component {
         {...others} 
         key={item} 
         current={item} 
-        style={[{width: calendarWidth || this.containerWidth}, style]}
+        style={[{paddingLeft: 0, paddingRight: 0}, style]}
         markedDates={this.getMarkedDates()}
-        onDayPress={onDayPress || this.onDayPress}
+        onDayPress={this.onDayPress}
       />
     );
   }
@@ -254,33 +255,17 @@ class WeekCalendar extends Component {
     };
   }
 
-  keyExtractor = (item, index) => index.toString();
+  keyExtractor = (item, index) => item.toString();
 
   render() {
     const {allowShadow, firstDay, hideDayNames} = this.props;
     const {items} = this.state;
     let weekDaysNames = weekDayNames(firstDay);
 
+    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+
     return (
       <View style={[allowShadow && this.style.containerShadow, !hideDayNames && {paddingBottom: 6}]}>
-        {!hideDayNames &&
-          <View style={[this.style.week, {marginTop: 12, marginBottom: -2}]}>
-            {/* {this.props.weekNumbers && <Text allowFontScaling={false} style={this.style.dayHeader}></Text>} */}
-            {weekDaysNames.map((day, idx) => (
-              <Text 
-                allowFontScaling={false} 
-                key={idx} 
-                style={this.style.dayHeader} 
-                numberOfLines={1} 
-                accessibilityLabel={''}
-                // accessible={false} // not working
-                // importantForAccessibility='no'
-              >
-                {day}
-              </Text>
-            ))}
-          </View>
-        }
         <FlatList
           ref={this.list}
           data={items}
@@ -288,23 +273,33 @@ class WeekCalendar extends Component {
           style={this.style.container}
           horizontal
           showsHorizontalScrollIndicator={false}
-          pagingEnabled
           scrollEnabled
           renderItem={this.renderItem}
           keyExtractor={this.keyExtractor}
-          getItemLayout={this.getItemLayout}
-          onScroll={this.onScroll}
-          onMomentumScrollEnd={this.onMomentumScrollEnd}
           bounces={false}
-          style={{width: this.containerWidth}}
-          // snapToInterval={35}
-          // decelerationRate={0}
-          // snapToAlignment={'center'}
+          // getItemLayout={this.getItemLayout}
+          // onScroll={this.onScroll}
+          onMomentumScrollEnd={this.onMomentumScrollEnd}
+          // snapToInterval={SNAP_WIDTH}
+          snapToOffsets={this.state.items.map((item, i) => i * SNAP_WIDTH)}
+          decelerationRate={0}
+          style={{marginHorizontal: INSET_PADDING, position: 'relative'}}
         />
-
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: this.state.leftPosition,
+            paddingHorizontal: 50,
+            paddingVertical: 35,
+            borderColor: '#000',
+            borderWidth: 2,
+            borderRadius: 3
+          }}
+        />
       </View>
     );
   }
 }
 
-export default asCalendarConsumer(WeekCalendar);
+export default asCalendarConsumer(CustomWeekCalendar);

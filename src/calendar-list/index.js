@@ -53,7 +53,7 @@ class CalendarList extends Component {
     /** A custom key extractor for the generated calendar months */
     keyExtractor: PropTypes.func,
     /** Jupiter calendar mode */
-    calendarMode: PropTypes.oneOf(['appointment', 'schedule'])
+    calendarMode: PropTypes.oneOf(['appointment', 'schedule', 'timeSelection'])
   }
 
   static defaultProps = {
