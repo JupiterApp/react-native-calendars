@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, TouchableOpacity} from 'react-native';
 import PropTypes from 'prop-types';
 import XDate from 'xdate';
 
@@ -130,32 +130,34 @@ class Week extends Component {
     const containerStyle = this.props.calendarMode === 'schedule' ? {width: WIDTH, alignItems: 'center'} : {flex: 1, alignItems: 'center'};
 
     return (
-      <View style={containerStyle} key={id}>
-        <View style={[this.style.week]}>
-          <Text 
-            allowFontScaling={false} 
-            style={[this.style.dayHeader, this.getDateMarking(day).selected && this.style.dayHeaderSelected]} 
-            numberOfLines={1} 
-            accessibilityLabel={''}
-          // accessible={false} // not working
-          // importantForAccessibility='no'
+      <TouchableOpacity onPress={() => this.props.onDayPress(dateAsObject)} disabled={state === 'disabled'} key={id}>
+        <View style={containerStyle} key={id}>
+          <View style={[this.style.week]}>
+            <Text 
+              allowFontScaling={false} 
+              style={[this.style.dayHeader, this.getDateMarking(day).selected && this.style.dayHeaderSelected]} 
+              numberOfLines={1} 
+              accessibilityLabel={''}
+              // accessible={false} // not working
+              // importantForAccessibility='no'
+            >
+              {day.toString('ddd').toUpperCase()}
+            </Text>
+          </View>
+          <DayComp
+            testID={`${SELECT_DATE_SLOT}-${dateAsObject.dateString}`}
+            state={state}
+            theme={this.props.theme}
+            onPress={this.props.onDayPress}
+            onLongPress={this.props.onDayPress}
+            date={dateAsObject}
+            marking={this.getDateMarking(day)}
+            disabled={state === 'disabled'}
           >
-            {day.toString('ddd').toUpperCase()}
-          </Text>
+            {dayDate}
+          </DayComp>
         </View>
-        <DayComp
-          testID={`${SELECT_DATE_SLOT}-${dateAsObject.dateString}`}
-          state={state}
-          theme={this.props.theme}
-          onPress={this.props.onDayPress}
-          onLongPress={this.props.onDayPress}
-          date={dateAsObject}
-          marking={this.getDateMarking(day)}
-          disabled={state === 'disabled'}
-        >
-          {dayDate}
-        </DayComp>
-      </View>
+      </TouchableOpacity>
     );
   }
 
