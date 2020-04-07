@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React, {Component} from 'react';
-import {Animated, FlatList, View, Text} from 'react-native';
+import {FlatList, View, Text} from 'react-native';
 import PropTypes from 'prop-types';
 import XDate from 'xdate';
 
@@ -52,15 +52,8 @@ class CustomWeekCalendar extends Component {
     this.page = NUMBER_OF_PAGES;
 
     this.state = {
-      items: this.getDatesArray(),
-      leftPosition: new Animated.Value(0),
-      leftPositionIndex: 0,
-      firstDateVisible: this.props.minDate
+      items: this.getDatesArray()
     };
-  }
-
-  componentDidMount () {
-    this.state.leftPosition.setValue(INSET_PADDING + 5);
   }
 
   componentDidUpdate(prevProps) {
@@ -71,7 +64,7 @@ class CustomWeekCalendar extends Component {
     if (date !== prevProps.context.date && updateSource !== UPDATE_SOURCES.WEEK_SCROLL) {
       const items = this.getDatesArray();
       this.setState({items});
-      const days = items.map(block => this.getWeek(block)).filter(day => isGTE(day, minDate));
+      const days = items.map(block => this.getWeek(block));
       days.forEach((dayArr, idx) => {
         if (dayArr.find(day => sameDate(XDate(this.props.current), day))) {
           currentDateIdx = idx;
@@ -140,9 +133,7 @@ class CustomWeekCalendar extends Component {
   }
 
   getDate(weekIndex) {
-    const {current, context} = this.props;
-    let firstDay = XDate(current).getDay();
-    if (firstDay === 0) firstDay = 7;
+    const {current, context, firstDay} = this.props;
     const d = XDate(current || context.date);
     // get the first day of the week as date (for the on scroll mark)
     let dayOfTheWeek = d.getDay();
@@ -165,78 +156,59 @@ class CustomWeekCalendar extends Component {
       const marked = _.cloneDeep(markedDates);
 
       if (marked[context.date]) {
-        marked[context.date].selected = false;
+        marked[context.date].selected = true;
       } else {
-        marked[context.date] = {selected: false};
+        marked[context.date] = {selected: true};
       }
       return marked;
     } 
-    return {[context.date]: {selected: false}};
+    return {[context.date]: {selected: true}};
   }
 
   onDayPress = (value) => {
-    const minDate = parseDate(this.props.minDate);
-    const DAY_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
-    let firstDay = XDate(this.state.firstDateVisible).getDay();
-    if (firstDay === 0) firstDay = 7;
-    const days = this.state.items.map(block => this.getWeek(block, firstDay)).filter(day => isGTE(day, minDate));
-    let currentDateIdx = 0;
-    let currentDate = '';
-    days.forEach((dayArr, idx) => {
-      if (dayArr.find(day => sameDate(XDate(value.dateString), day))) {
-        currentDate = dayArr.find(day => sameDate(XDate(value.dateString), day));
-        currentDateIdx = dayArr.findIndex(day => sameDate(XDate(value.dateString), day));
-      }
-    });
-    const flattened = _.flattenDeep(days);
-    const found = Math.max(0, flattened.findIndex(day => sameDate(XDate(value.dateString), day)));
-    const previous = Math.max(0, found - 1);
-    
-    let toValue = DAY_WIDTH * currentDateIdx + INSET_PADDING + 2;
+    const days = _.flatten(this.state.items.map(block => this.getWeek(block)));
+    const scrollIndex = days.findIndex(day => sameDate(XDate(value.dateString), day));
     // If last element in list, we need to adjust invoked date
-    if (currentDateIdx === 6) {
-      currentDateIdx = 5;
-      toValue = DAY_WIDTH * 5 + INSET_PADDING + 2;
-      _.invoke(this.props.context, 'setDate', XDate(flattened[previous]).toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
-    } else {
-      _.invoke(this.props.context, 'setDate', value.dateString, UPDATE_SOURCES.WEEK_SCROLL);
-    }
-    this.setState({leftPositionIndex: currentDateIdx});
-    Animated.timing(this.state.leftPosition, {
-      toValue: toValue,
-      duration: 500
-    }).start();
+
+    // _.invoke(this.props.context, 'setDate', value.dateString, UPDATE_SOURCES.WEEK_SCROLL);
+    this.list.current.scrollToIndex({animated: true, index: scrollIndex + 1, viewPosition: 0.5});
   }
 
-  onScroll = ({nativeEvent: {contentOffset: {x}}}) => {
+  getThreeDaysBeforeMin (minDate) {
+    const newDates = [];
+    const ARR = [1, 2, 3].reverse();
+    ARR.forEach(value => {
+      newDates.push(minDate.clone().addDays(-value));
+    });
+    return newDates;
+  }
+
+  onScroll = (e) => {
+    const minDate = parseDate(this.props.minDate);
+    let contentOffset = e.nativeEvent.contentOffset;
+    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+    const threeDays = this.getThreeDaysBeforeMin(minDate);
+    const days = _.flatten(this.state.items.map(block => this.getWeek(block)));
+    days.unshift(threeDays);
+    // Divide the horizontal offset by the width of the view to see which page is visible
+    const pageNum = Math.round(contentOffset.x / SNAP_WIDTH);
+    const date = XDate(days[pageNum - 1]).addDays(3);
+    console.log('pageNum', date);
+    _.invoke(this.props.context, 'setDate', date.toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
   }
 
   onMomentumScrollEnd = (e) => {
     let contentOffset = e.nativeEvent.contentOffset;
-    let viewSize = e.nativeEvent.layoutMeasurement;
-    const minDate = parseDate(this.props.minDate);
-
     const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+    const days = _.flatten(this.state.items.map(block => this.getWeek(block)));
     // Divide the horizontal offset by the width of the view to see which page is visible
     const pageNum = Math.round(contentOffset.x / SNAP_WIDTH);
-    const days = _.flatten(this.state.items.map(block => this.getWeek(block))).filter(day => isGTE(day, minDate));
-    const firstDateVisible = days[pageNum].toString('yyyy-MM-dd');
-    console.log('first date visible', this.state.items, firstDateVisible);
-    let firstDay = XDate(firstDateVisible).getDay();
-    if (firstDay === 0) firstDay = 7;
-    const newDays = this.state.items.map(block => this.getWeek(block, firstDay)).filter(day => isGTE(day, minDate));
-    let currentDateIdx = 0;
-    newDays.forEach((dayArr, idx) => {
-      if (dayArr.find(day => sameDate(XDate(firstDateVisible), day))) {
-        currentDateIdx = idx;
-      }
-    });
-    let currentDate = newDays[currentDateIdx][this.state.leftPositionIndex];
-    this.setState({firstDateVisible});
-    _.invoke(this.props.context, 'setDate', XDate(currentDate).toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
+    const date = XDate(days[pageNum - 1]).addDays(3);
+    console.log('pageNum', date);
+    //  _.invoke(this.props.context, 'setDate', date.toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
   }
 
-  renderItem = ({item}) => {
+  renderItem = ({item, index}) => {
     const {calendarWidth, style, onDayPress, ...others} = this.props;
 
     return (
@@ -244,6 +216,7 @@ class CustomWeekCalendar extends Component {
         {...others} 
         key={item} 
         current={item} 
+        index={index}
         style={[{paddingLeft: 0, paddingRight: 0}, style]}
         markedDates={this.getMarkedDates()}
         onDayPress={this.onDayPress}
@@ -252,9 +225,10 @@ class CustomWeekCalendar extends Component {
   }
 
   getItemLayout = (data, index) => {
+    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
     return {
-      length: this.containerWidth,
-      offset: this.containerWidth * index,
+      length: SNAP_WIDTH,
+      offset: SNAP_WIDTH * index,
       index
     };
   }
@@ -281,25 +255,12 @@ class CustomWeekCalendar extends Component {
           renderItem={this.renderItem}
           keyExtractor={this.keyExtractor}
           bounces={false}
-          // getItemLayout={this.getItemLayout}
-          // onScroll={this.onScroll}
+          getItemLayout={this.getItemLayout}
+          onScroll={this.onScroll}
           onMomentumScrollEnd={this.onMomentumScrollEnd}
-          // snapToInterval={SNAP_WIDTH}
           snapToOffsets={this.state.items.map((item, i) => i * SNAP_WIDTH)}
           decelerationRate={0}
-          style={{marginHorizontal: INSET_PADDING, position: 'relative'}}
-        />
-        <Animated.View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: this.state.leftPosition,
-            paddingHorizontal: 50,
-            paddingVertical: 35,
-            borderColor: '#000',
-            borderWidth: 2,
-            borderRadius: 3
-          }}
+          style={{marginHorizontal: INSET_PADDING}}
         />
       </View>
     );

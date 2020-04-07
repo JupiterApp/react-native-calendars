@@ -62,6 +62,17 @@ class Week extends Component {
     }
   }
 
+
+  getThreeDaysBeforeMin (dates, minDate) {
+    const newDates = [];
+    const ARR = [1, 2, 3].reverse();
+    ARR.forEach(value => {
+      newDates.push(minDate.clone().addDays(-value));
+    });
+    return newDates;
+  }
+
+
   getDayComponent() {
     const {dayComponent} = this.props;
     if (dayComponent) {
@@ -104,7 +115,7 @@ class Week extends Component {
     const {current} = this.props;
     const minDate = parseDate(this.props.minDate);
     const maxDate = parseDate(this.props.maxDate);
-    
+
     let state = '';
     if (this.props.disabledByDefault) {
       state = 'disabled';
@@ -113,6 +124,8 @@ class Week extends Component {
     } else if (!dateutils.sameMonth(day, parseDate(current))) { // for extra days
       state = 'not-disabled';
     } else if (dateutils.sameDate(day, XDate())) {
+      state = 'today';
+    } else if (dateutils.sameDate(current, day)) {
       state = 'today';
     }
 
@@ -131,15 +144,15 @@ class Week extends Component {
 
     return (
       <TouchableOpacity onPress={() => this.props.onDayPress(dateAsObject)} disabled={state === 'disabled'} key={id}>
-        <View style={containerStyle} key={id}>
+        <View style={containerStyle}>
           <View style={[this.style.week]}>
             <Text 
               allowFontScaling={false} 
               style={[this.style.dayHeader, this.getDateMarking(day).selected && this.style.dayHeaderSelected]} 
               numberOfLines={1} 
               accessibilityLabel={''}
-              // accessible={false} // not working
-              // importantForAccessibility='no'
+            // accessible={false} // not working
+            // importantForAccessibility='no'
             >
               {day.toString('ddd').toUpperCase()}
             </Text>
@@ -165,18 +178,21 @@ class Week extends Component {
     const {current, calendarMode} = this.props;
     const minDate = parseDate(this.props.minDate);
     let dates = this.getWeek(current);
-    const week = [];
+    let week = [];
 
-    if (calendarMode === 'schedule') {
+    if (calendarMode === 'schedule' && this.props.index === 0) {
       const originalDates = dates;
       dates = originalDates.filter(day => dateutils.isGTE(day, minDate));
+      const threeDays = this.getThreeDaysBeforeMin(dates, minDate);
+      dates = [...threeDays, ...dates];
     }
-    
+
     if (dates) {
       dates.forEach((day, id) => {
         week.push(this.renderDay(day, id));
       }, this);
     }
+    
     
     // if (this.props.showWeekNumbers) {
     //   week.unshift(this.renderWeekNumber(item[item.length - 1].getWeek()));
