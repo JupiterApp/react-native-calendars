@@ -9,7 +9,7 @@ import {xdateToData, parseDate} from '../interface';
 import CalendarList from '../calendar-list';
 import Week from '../expandableCalendar/week';
 import asCalendarConsumer from './asCalendarConsumer';
-import {weekDayNames, sameDate} from '../dateutils';
+import {weekDayNames, sameDate, isGTE} from '../dateutils';
 
 
 const commons = require('./commons');
@@ -65,12 +65,13 @@ class CustomWeekCalendar extends Component {
 
   componentDidUpdate(prevProps) {
     const {updateSource, date} = this.props.context;
+    const minDate = parseDate(this.props.minDate);
    
     
     if (date !== prevProps.context.date && updateSource !== UPDATE_SOURCES.WEEK_SCROLL) {
       const items = this.getDatesArray();
       this.setState({items});
-      const days = items.map(block => this.getWeek(block));
+      const days = items.map(block => this.getWeek(block)).filter(day => isGTE(day, minDate));
       days.forEach((dayArr, idx) => {
         if (dayArr.find(day => sameDate(XDate(this.props.current), day))) {
           currentDateIdx = idx;
@@ -135,7 +136,7 @@ class CustomWeekCalendar extends Component {
   }
 
   getDatesArray() {
-    return  this.getDateMaxForTimeSelection();
+    return this.getDateMaxForTimeSelection();
   }
 
   getDate(weekIndex) {
@@ -174,10 +175,11 @@ class CustomWeekCalendar extends Component {
   }
 
   onDayPress = (value) => {
+    const minDate = parseDate(this.props.minDate);
     const DAY_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
     let firstDay = XDate(this.state.firstDateVisible).getDay();
     if (firstDay === 0) firstDay = 7;
-    const days = this.state.items.map(block => this.getWeek(block, firstDay));
+    const days = this.state.items.map(block => this.getWeek(block, firstDay)).filter(day => isGTE(day, minDate));
     let currentDateIdx = 0;
     let currentDate = '';
     days.forEach((dayArr, idx) => {
@@ -212,15 +214,17 @@ class CustomWeekCalendar extends Component {
   onMomentumScrollEnd = (e) => {
     let contentOffset = e.nativeEvent.contentOffset;
     let viewSize = e.nativeEvent.layoutMeasurement;
+    const minDate = parseDate(this.props.minDate);
 
     const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
     // Divide the horizontal offset by the width of the view to see which page is visible
-    const pageNum = Math.round(contentOffset.x / SNAP_WIDTH) + 1;
-    const days = _.flatten(this.state.items.map(block => this.getWeek(block)));
+    const pageNum = Math.round(contentOffset.x / SNAP_WIDTH);
+    const days = _.flatten(this.state.items.map(block => this.getWeek(block))).filter(day => isGTE(day, minDate));
     const firstDateVisible = days[pageNum].toString('yyyy-MM-dd');
+    console.log('first date visible', this.state.items, firstDateVisible);
     let firstDay = XDate(firstDateVisible).getDay();
     if (firstDay === 0) firstDay = 7;
-    const newDays = this.state.items.map(block => this.getWeek(block, firstDay));
+    const newDays = this.state.items.map(block => this.getWeek(block, firstDay)).filter(day => isGTE(day, minDate));
     let currentDateIdx = 0;
     newDays.forEach((dayArr, idx) => {
       if (dayArr.find(day => sameDate(XDate(firstDateVisible), day))) {
