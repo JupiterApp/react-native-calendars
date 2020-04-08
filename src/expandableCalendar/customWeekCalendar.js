@@ -1,15 +1,17 @@
 import _ from 'lodash';
 import React, {Component} from 'react';
-import {FlatList, View, Text} from 'react-native';
+import {View, Text} from 'react-native';
 import PropTypes from 'prop-types';
 import XDate from 'xdate';
+import Carousel from 'react-native-snap-carousel';
 
+import {SELECT_DATE_SLOT} from '../testIDs';
 import styleConstructor from './style';
 import {xdateToData, parseDate} from '../interface';
 import CalendarList from '../calendar-list';
-import Week from '../expandableCalendar/week';
 import asCalendarConsumer from './asCalendarConsumer';
-import {weekDayNames, sameDate, isGTE} from '../dateutils';
+import {weekDayNames, sameDate, sameMonth, isLTE, isGTE} from '../dateutils';
+import Day from '../calendar/day/basic';
 
 
 const commons = require('./commons');
@@ -183,45 +185,87 @@ class CustomWeekCalendar extends Component {
     return newDates;
   }
 
-  onScroll = (e) => {
+  renderDay(day, id) {
+    const {current} = this.props;
     const minDate = parseDate(this.props.minDate);
-    let contentOffset = e.nativeEvent.contentOffset;
-    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
-    const threeDays = this.getThreeDaysBeforeMin(minDate);
-    const days = _.flatten(this.state.items.map(block => this.getWeek(block)));
-    days.unshift(threeDays);
-    // Divide the horizontal offset by the width of the view to see which page is visible
-    const pageNum = Math.round(contentOffset.x / SNAP_WIDTH);
-    const date = XDate(days[pageNum - 1]).addDays(3);
-    console.log('pageNum', date);
-    _.invoke(this.props.context, 'setDate', date.toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
-  }
+    const maxDate = parseDate(this.props.maxDate);
 
-  onMomentumScrollEnd = (e) => {
-    let contentOffset = e.nativeEvent.contentOffset;
-    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
-    const days = _.flatten(this.state.items.map(block => this.getWeek(block)));
-    // Divide the horizontal offset by the width of the view to see which page is visible
-    const pageNum = Math.round(contentOffset.x / SNAP_WIDTH);
-    const date = XDate(days[pageNum - 1]).addDays(3);
-    console.log('pageNum', date);
-    //  _.invoke(this.props.context, 'setDate', date.toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
+    let state = '';
+    if (this.props.disabledByDefault) {
+      state = 'disabled';
+    } else if ((minDate && !isGTE(day, minDate)) || (maxDate && !isLTE(day, maxDate))) {
+      state = 'disabled';
+    } else if (!sameMonth(day, parseDate(current))) { // for extra days
+      state = 'not-disabled';
+    }
+
+    if (id === this.state.slideIdx) {
+      console.log('state', state);
+    }
+
+    // hide extra days
+    if (current && this.props.hideExtraDays) {
+      if (!sameMonth(day, parseDate(current))) {
+        return (<View key={id} style={{flex: 1}}/>);
+      }
+    }
+
+    const DayComp = Day;
+    const dayDate = day.getDate();
+    const dateAsObject = xdateToData(day);
+    const WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+    const containerStyle = {width: WIDTH, alignItems: 'center'};
+
+    return (
+      <View style={containerStyle} key={id}>
+        <View style={[this.style.week, {paddingRight: 0, paddingLeft: 0}]}>
+          <Text 
+            allowFontScaling={false} 
+            style={[this.style.dayHeader, this.getDateMarking(day).selected && this.style.dayHeaderSelected]} 
+            numberOfLines={1} 
+            accessibilityLabel={''}
+            // accessible={false} // not working
+            // importantForAccessibility='no'
+          >
+            {day.toString('ddd').toUpperCase()}
+          </Text>
+        </View>
+        <DayComp
+          testID={`${SELECT_DATE_SLOT}-${dateAsObject.dateString}`}
+          state={state}
+          theme={this.props.theme}
+          onPress={this.props.onDayPress}
+          onLongPress={this.props.onDayPress}
+          date={dateAsObject}
+          marking={this.getDateMarking(day)}
+          disabled={true}
+        >
+          {dayDate}
+        </DayComp>
+      </View>
+    );
   }
 
   renderItem = ({item, index}) => {
-    const {calendarWidth, style, onDayPress, ...others} = this.props;
-
     return (
-      <Week 
-        {...others} 
-        key={item} 
-        current={item} 
-        index={index}
-        style={[{paddingLeft: 0, paddingRight: 0}, style]}
-        markedDates={this.getMarkedDates()}
-        onDayPress={this.onDayPress}
-      />
+      <View key={item}>
+        {this.renderDay(item, index)}
+      </View>
     );
+  }
+
+  getDateMarking(day) {
+    const markedDates = this.getMarkedDates();
+    if (!markedDates) {
+      return false;
+    }
+
+    const dates = markedDates[day.toString('yyyy-MM-dd')] || [];
+    if (dates.length || dates) {
+      return dates;
+    } else {
+      return false;
+    }
   }
 
   getItemLayout = (data, index) => {
@@ -233,34 +277,42 @@ class CustomWeekCalendar extends Component {
     };
   }
 
+  onSnapToItem = (index) => {
+    this.setState({slideIdx: index});
+    const snapItems = _.flatten(this.state.items.map(item => this.getWeek(item)));
+    const date = snapItems[index];
+    if (index < 3) return this._carousel.snapToItem(3);
+    _.invoke(this.props.context, 'setDate', date.toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
+  }
+
   keyExtractor = (item, index) => item.toString();
 
   render() {
-    const {allowShadow, firstDay, hideDayNames} = this.props;
+    const {allowShadow, hideDayNames} = this.props;
     const {items} = this.state;
-    let weekDaysNames = weekDayNames(firstDay);
+    const minDate = parseDate(this.props.minDate);
 
     const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+    const filteredItems = _.flatten(items.map(item => this.getWeek(item))).filter(day => isGTE(day, minDate));
+    const threeDates = this.getThreeDaysBeforeMin(minDate);
+    const snapItems = [...threeDates, ...filteredItems];
+
 
     return (
       <View style={[allowShadow && this.style.containerShadow, !hideDayNames && {paddingBottom: 6}]}>
-        <FlatList
-          ref={this.list}
-          data={items}
-          extraData={this.props.current || this.props.context.date}
-          style={this.style.container}
+        <Carousel
+          ref={(c) => { this._carousel = c; }}
+          data={snapItems}
+          containerCustomStyle={[this.style.container, {position: 'absolute', top: 8}]}
           horizontal
-          showsHorizontalScrollIndicator={false}
-          scrollEnabled
           renderItem={this.renderItem}
-          keyExtractor={this.keyExtractor}
-          bounces={false}
-          getItemLayout={this.getItemLayout}
-          onScroll={this.onScroll}
-          onMomentumScrollEnd={this.onMomentumScrollEnd}
-          snapToOffsets={this.state.items.map((item, i) => i * SNAP_WIDTH)}
-          decelerationRate={0}
-          style={{marginHorizontal: INSET_PADDING}}
+          inactiveSlideOpacity={1}
+          inactiveSlideScale={1}
+          sliderWidth={this.containerWidth}
+          itemWidth={SNAP_WIDTH}
+          onSnapToItem={this.onSnapToItem}
+          onBeforeSnapToItem={this.handleBeforeSnapToItem}
+          firstItem={3}
         />
       </View>
     );
