@@ -10,7 +10,7 @@ import styleConstructor from './style';
 import {xdateToData, parseDate} from '../interface';
 import CalendarList from '../calendar-list';
 import asCalendarConsumer from './asCalendarConsumer';
-import {weekDayNames, sameDate, sameMonth, isLTE, isGTE} from '../dateutils';
+import {sameDate, sameMonth, isLTE, isGTE} from '../dateutils';
 import Day from '../calendar/day/basic';
 
 
@@ -18,9 +18,9 @@ const commons = require('./commons');
 const UPDATE_SOURCES = commons.UPDATE_SOURCES;
 const NUMBER_OF_PAGES = 2; // must be a positive numbee
 const INSET_PADDING = 15;
+const MIDDLE_INDEX = 3;
 
 
-const EmptyArray = [];
 
 /**
  * @description: Week calendar component
@@ -60,20 +60,13 @@ class CustomWeekCalendar extends Component {
 
   componentDidUpdate(prevProps) {
     const {updateSource, date} = this.props.context;
-    const minDate = parseDate(this.props.minDate);
-   
     
     if (date !== prevProps.context.date && updateSource !== UPDATE_SOURCES.WEEK_SCROLL) {
       const items = this.getDatesArray();
       this.setState({items});
-      const days = items.map(block => this.getWeek(block));
-      days.forEach((dayArr, idx) => {
-        if (dayArr.find(day => sameDate(XDate(this.props.current), day))) {
-          currentDateIdx = idx;
-        }
-      });
-      const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7 + 1;
-      this.list.current.scrollToIndex({animated: false, index: currentDateIdx});
+      const currentDate = parseDate(this.props.current);
+      const indexFound = items.findIndex(item => sameDate(currentDate, item));
+      this._carousel.snapToItem(indexFound, false);
     }
   }
 
@@ -117,7 +110,7 @@ class CustomWeekCalendar extends Component {
     while (!endReached) {
       const d = this.getDate(counter);
       const days = array.map(block => this.getWeek(block));
-      days.forEach((dayArr, idx) => {
+      days.forEach((dayArr) => {
         if (dayArr.find(day => sameDate(day, XDate(this.props.maxDate)))) {
           endReached = true;
           return;
@@ -131,12 +124,17 @@ class CustomWeekCalendar extends Component {
   }
 
   getDatesArray() {
-    return this.getDateMaxForTimeSelection();
+    const minDate = parseDate(this.props.minDate);
+    const items = this.getDateMaxForTimeSelection();
+    const filteredItems = _.flatten(items.map(item => this.getWeek(item))).filter(day => isGTE(day, minDate));
+    const threeDates = this.getThreeDaysBeforeMin(minDate);
+    const snapItems = [...threeDates, ...filteredItems];
+    return snapItems;
   }
 
   getDate(weekIndex) {
-    const {current, context, firstDay} = this.props;
-    const d = XDate(current || context.date);
+    const {firstDay} = this.props;
+    const d = XDate(this.props.minDate);
     // get the first day of the week as date (for the on scroll mark)
     let dayOfTheWeek = d.getDay();
     if (dayOfTheWeek < firstDay && firstDay > 0) {
@@ -158,13 +156,13 @@ class CustomWeekCalendar extends Component {
       const marked = _.cloneDeep(markedDates);
 
       if (marked[context.date]) {
-        marked[context.date].selected = true;
+        marked[context.date].selected = false;
       } else {
-        marked[context.date] = {selected: true};
+        marked[context.date] = {selected: false};
       }
       return marked;
     } 
-    return {[context.date]: {selected: true}};
+    return {[context.date]: {selected: false}};
   }
 
   onDayPress = (value) => {
@@ -221,7 +219,7 @@ class CustomWeekCalendar extends Component {
         <View style={[this.style.week, {paddingRight: 0, paddingLeft: 0}]}>
           <Text 
             allowFontScaling={false} 
-            style={[this.style.dayHeader, this.getDateMarking(day).selected && this.style.dayHeaderSelected]} 
+            style={[this.style.dayHeader]} 
             numberOfLines={1} 
             accessibilityLabel={''}
             // accessible={false} // not working
@@ -279,30 +277,25 @@ class CustomWeekCalendar extends Component {
 
   onSnapToItem = (index) => {
     this.setState({slideIdx: index});
-    const snapItems = _.flatten(this.state.items.map(item => this.getWeek(item)));
-    const date = snapItems[index];
-    if (index < 3) return this._carousel.snapToItem(3);
+    const date = this.state.items[index];
+    if (index < MIDDLE_INDEX) return this._carousel.snapToItem(MIDDLE_INDEX);
     _.invoke(this.props.context, 'setDate', date.toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
   }
 
-  keyExtractor = (item, index) => item.toString();
+
+  keyExtractor = (item) => item.toString();
 
   render() {
     const {allowShadow, hideDayNames} = this.props;
     const {items} = this.state;
-    const minDate = parseDate(this.props.minDate);
-
     const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
-    const filteredItems = _.flatten(items.map(item => this.getWeek(item))).filter(day => isGTE(day, minDate));
-    const threeDates = this.getThreeDaysBeforeMin(minDate);
-    const snapItems = [...threeDates, ...filteredItems];
 
 
     return (
       <View style={[allowShadow && this.style.containerShadow, !hideDayNames && {paddingBottom: 6}]}>
         <Carousel
           ref={(c) => { this._carousel = c; }}
-          data={snapItems}
+          data={items}
           containerCustomStyle={[this.style.container, {position: 'absolute', top: 8}]}
           horizontal
           renderItem={this.renderItem}
@@ -311,8 +304,19 @@ class CustomWeekCalendar extends Component {
           sliderWidth={this.containerWidth}
           itemWidth={SNAP_WIDTH}
           onSnapToItem={this.onSnapToItem}
-          onBeforeSnapToItem={this.handleBeforeSnapToItem}
-          firstItem={3}
+          firstItem={MIDDLE_INDEX}
+        />
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: SNAP_WIDTH * 3 + INSET_PADDING,
+            paddingHorizontal: 50,
+            paddingVertical: 35,
+            borderColor: '#000',
+            borderWidth: 2,
+            borderRadius: 3
+          }}
         />
       </View>
     );
