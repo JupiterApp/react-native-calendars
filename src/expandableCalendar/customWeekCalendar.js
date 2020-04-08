@@ -197,10 +197,6 @@ class CustomWeekCalendar extends Component {
       state = 'not-disabled';
     }
 
-    if (id === this.state.slideIdx) {
-      console.log('state', state);
-    }
-
     // hide extra days
     if (current && this.props.hideExtraDays) {
       if (!sameMonth(day, parseDate(current))) {
