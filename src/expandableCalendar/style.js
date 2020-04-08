@@ -99,8 +99,7 @@ export default function styleConstructor(theme = {}) {
       fontSize: appStyle.textDayHeaderFontSize,
       fontFamily: appStyle.textDayHeaderFontFamily,
       fontWeight: appStyle.textDayHeaderFontWeight,
-      color: appStyle.textSectionTitleColor,
-      paddingRight: 2
+      color: appStyle.textSectionTitleColor
     },
     dayHeaderSelected: {
       color: appStyle.selectedDayTextColor
