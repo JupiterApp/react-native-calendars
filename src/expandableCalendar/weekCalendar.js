@@ -145,8 +145,8 @@ class WeekCalendar extends Component {
   }
 
   getDate(weekIndex) {
-    const {current, context, firstDay} = this.props;
-    const d = XDate(current || context.date);
+    const {firstDay} = this.props;
+    const d = XDate(this.props.minDate);
     // get the first day of the week as date (for the on scroll mark)
     let dayOfTheWeek = d.getDay();
     if (dayOfTheWeek < firstDay && firstDay > 0) {
