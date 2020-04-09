@@ -435,9 +435,9 @@ class ExpandableCalendar extends Component {
         ref={e => this.weekCalendar = e}
         style={{
           position: 'absolute', 
-          left: calendarMode === 'schedule' ? 0 : -0.7,
+          left: calendarMode === 'schedule' ? 0 : commons.isAndroid ? 1.5 : -0.7,
           right: 0, 
-          top: calendarMode === 'schedule' ? 40 : HEADER_HEIGHT + (commons.isAndroid ? 8 : 5.1), // align row on top of calendar's first row
+          top: calendarMode === 'schedule' ? 40 : HEADER_HEIGHT + (commons.isAndroid ? 8 : 5.5), // align row on top of calendar's first row
           opacity: position === POSITIONS.OPEN ? 0 : 1
         }}
         pointerEvents={position === POSITIONS.CLOSED ? 'auto' : 'none'}
