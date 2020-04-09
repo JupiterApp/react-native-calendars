@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import React, {Component} from 'react';
-import {View, Text} from 'react-native';
+import {Platform, View, Text} from 'react-native';
 import PropTypes from 'prop-types';
 import XDate from 'xdate';
 import Carousel from 'react-native-snap-carousel';
@@ -297,19 +297,20 @@ class CustomWeekCalendar extends Component {
         <View
           style={{
             position: 'absolute',
-            top: 0,
+            top: Platform.OS === 'android' ? 5 : 0,
             left: SNAP_WIDTH * 3,
             paddingHorizontal: 50,
             paddingVertical: 37,
             borderColor: '#000',
             borderWidth: 2,
-            borderRadius: 3
+            borderRadius: 3,
+            zIndex: 2
           }}
         />
         <Carousel
           ref={(c) => { this._carousel = c; }}
           data={items}
-          containerCustomStyle={{position: 'absolute', top: 8, paddingHorizontal: 0}}
+          containerCustomStyle={{position: 'absolute', top: 8, paddingHorizontal: 0, zIndex: 2}}
           horizontal
           renderItem={this.renderItem}
           inactiveSlideOpacity={1}
@@ -319,7 +320,7 @@ class CustomWeekCalendar extends Component {
           onSnapToItem={this.onSnapToItem}
           firstItem={MIDDLE_INDEX}
         />
-        <View style={[this.style.container, {width: this.containerWidth, height: 100, zIndex: -1}]}/>
+        <View style={[this.style.container, {width: this.containerWidth, height: 100, zIndex: 1}]}/>
       </View>
     );
   }
