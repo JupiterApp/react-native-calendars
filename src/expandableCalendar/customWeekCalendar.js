@@ -17,8 +17,9 @@ import Day from '../calendar/day/basic';
 const commons = require('./commons');
 const UPDATE_SOURCES = commons.UPDATE_SOURCES;
 const NUMBER_OF_PAGES = 2; // must be a positive numbee
-const INSET_PADDING = 15;
-const MIDDLE_INDEX = 3;
+const INSET_PADDING = 0;
+const MIDDLE_INDEX = 4;
+const NUMBER_OF_ITEMS = 8;
 
 
 
@@ -66,7 +67,7 @@ class CustomWeekCalendar extends Component {
       this.setState({items});
       const currentDate = parseDate(this.props.current);
       const indexFound = items.findIndex(item => sameDate(currentDate, item));
-      this._carousel.snapToItem(indexFound, false);
+      this._carousel.snapToItem(indexFound + 1, false);
     }
   }
 
@@ -207,7 +208,7 @@ class CustomWeekCalendar extends Component {
     const DayComp = Day;
     const dayDate = day.getDate();
     const dateAsObject = xdateToData(day);
-    const WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+    const WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 8;
     const containerStyle = {width: WIDTH, alignItems: 'center'};
 
     return (
@@ -263,7 +264,7 @@ class CustomWeekCalendar extends Component {
   }
 
   getItemLayout = (data, index) => {
-    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / NUMBER_OF_ITEMS;
     return {
       length: SNAP_WIDTH,
       offset: SNAP_WIDTH * index,
@@ -272,9 +273,13 @@ class CustomWeekCalendar extends Component {
   }
 
   onSnapToItem = (index) => {
-    this.setState({slideIdx: index});
-    const date = this.state.items[index];
-    if (index < MIDDLE_INDEX) return this._carousel.snapToItem(MIDDLE_INDEX);
+    const slideIndex = index - 1;
+    this.setState({slideIdx: slideIndex});
+    const date = this.state.items[slideIndex];
+    if (slideIndex < MIDDLE_INDEX) {
+      _.invoke(this.props.context, 'setDate', this.props.minDate, UPDATE_SOURCES.WEEK_SCROLL);
+      return this._carousel.snapToItem(MIDDLE_INDEX);
+    }
     _.invoke(this.props.context, 'setDate', date.toString('yyyy-MM-dd'), UPDATE_SOURCES.WEEK_SCROLL);
   }
 
@@ -284,36 +289,37 @@ class CustomWeekCalendar extends Component {
   render() {
     const {allowShadow, hideDayNames} = this.props;
     const {items} = this.state;
-    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / 7;
+    const SNAP_WIDTH = (this.containerWidth - (INSET_PADDING * 2)) / NUMBER_OF_ITEMS;
 
 
     return (
       <View style={[allowShadow && this.style.containerShadow, !hideDayNames && {paddingBottom: 6}]}>
-        <Carousel
-          ref={(c) => { this._carousel = c; }}
-          data={items}
-          containerCustomStyle={[this.style.container, {position: 'absolute', top: 8}]}
-          horizontal
-          renderItem={this.renderItem}
-          inactiveSlideOpacity={1}
-          inactiveSlideScale={1}
-          sliderWidth={this.containerWidth}
-          itemWidth={SNAP_WIDTH}
-          onSnapToItem={this.onSnapToItem}
-          firstItem={MIDDLE_INDEX}
-        />
         <View
           style={{
             position: 'absolute',
             top: 0,
-            left: SNAP_WIDTH * 3 + INSET_PADDING,
+            left: SNAP_WIDTH * 3,
             paddingHorizontal: 50,
-            paddingVertical: 35,
+            paddingVertical: 37,
             borderColor: '#000',
             borderWidth: 2,
             borderRadius: 3
           }}
         />
+        <Carousel
+          ref={(c) => { this._carousel = c; }}
+          data={items}
+          containerCustomStyle={{position: 'absolute', top: 8, paddingHorizontal: 0}}
+          horizontal
+          renderItem={this.renderItem}
+          inactiveSlideOpacity={1}
+          inactiveSlideScale={1}
+          sliderWidth={this.containerWidth + SNAP_WIDTH}
+          itemWidth={SNAP_WIDTH}
+          onSnapToItem={this.onSnapToItem}
+          firstItem={MIDDLE_INDEX}
+        />
+        <View style={[this.style.container, {width: this.containerWidth, height: 100, zIndex: -1}]}/>
       </View>
     );
   }
