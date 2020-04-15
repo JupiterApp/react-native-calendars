@@ -40,7 +40,7 @@ export default function(theme={}) {
       marginTop: 2,
       marginLeft: 3,
       marginBottom: 5,
-      width: 35,
+      width: 37,
       textAlign: 'center',
       fontSize: appStyle.textDayHeaderFontSize,
       fontFamily: appStyle.textDayHeaderFontFamily,

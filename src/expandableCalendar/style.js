@@ -32,7 +32,7 @@ export default function styleConstructor(theme = {}) {
       left: 0,
       right: 0,
       height: 22,
-      bottom: Platform.OS === 'android' ? -10 : 0,
+      bottom: Platform.OS === 'android' ? -15 : 0,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: appStyle.calendarBackground
