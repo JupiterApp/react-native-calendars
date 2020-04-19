@@ -386,6 +386,18 @@ class ExpandableCalendar extends Component {
     if (this.props.onMonthChange) {
       this.props.onMonthChange(date.toString('MMMM'));
     }
+
+    // updating openHeight
+    setTimeout(() => { // to wait for setDate() call in horizontal scroll (this.scrollPage())
+      const numberOfWeeks = this.getNumberOfWeeksInMonth(parseDate(date));
+      if (numberOfWeeks !== this.numberOfWeeks) {
+        this.numberOfWeeks = numberOfWeeks;
+        this.openHeight = this.getOpenHeight();
+        if (this.state.position === POSITIONS.OPEN) {
+          this.bounceToPosition(this.openHeight);
+        }
+      }
+    }, 0);
   }
 
   /** Renders */
