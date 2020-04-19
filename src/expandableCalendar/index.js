@@ -35,6 +35,7 @@ const WEEK_HEIGHT = 46;
 const KNOB_CONTAINER_HEIGHT = 20;
 const HEADER_HEIGHT = 35;
 const DAY_NAMES_PADDING = 24;
+const SCHEDULE_CLOSED_HEIGHT = 70;
 
 /**
  * @description: Expandable calendar component
@@ -80,7 +81,7 @@ class ExpandableCalendar extends Component {
     super(props);
 
     this.style = styleConstructor(props.theme);
-    this.closedHeight = CLOSED_HEIGHT + (props.hideKnob ? 0 : KNOB_CONTAINER_HEIGHT);
+    this.closedHeight = props.calendarMode === 'schedule' ? SCHEDULE_CLOSED_HEIGHT : CLOSED_HEIGHT + (props.hideKnob ? 0 : KNOB_CONTAINER_HEIGHT);
     this.numberOfWeeks = this.getNumberOfWeeksInMonth(XDate(this.props.context.date));
     this.openHeight = this.getOpenHeight();
     
@@ -543,7 +544,7 @@ class ExpandableCalendar extends Component {
               onMonthChange={this.onMonthChange}
               calendarMode={this.props.calendarMode}
             /> 
-            {horizontal && this.renderWeekCalendar()}
+            {horizontal && this.props.calendarMode !== 'schedule' && this.renderWeekCalendar()}
             {!hideKnob && this.renderKnob()}
             {!horizontal && this.renderHeader()}
           </Animated.View> 
