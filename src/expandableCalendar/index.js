@@ -63,7 +63,9 @@ class ExpandableCalendar extends Component {
     /** whether to disable the week scroll in closed position */
     disableWeekScroll: PropTypes.bool,
     /** custom calendar mode enums from Jupiter */
-    calendarMode: PropTypes.oneOf(['appointment', 'schedule', 'timeSelection'])
+    calendarMode: PropTypes.oneOf(['appointment', 'schedule', 'timeSelection']),
+    /** custom selected date handler from Jupiter */
+    selectedDate: PropTypes.string
   }
 
   static defaultProps = {
@@ -134,6 +136,10 @@ class ExpandableCalendar extends Component {
     if (date !== prevProps.context.date) {
       // date was changed from AgendaList, arrows or scroll
       this.scrollToDate(date);
+    }
+
+    if (prevProps.selectedDate !== this.props.selectedDate) {
+      _.invoke(this.props.context, 'setDate', this.props.selectedDate, UPDATE_SOURCES.DAY_PRESS); 
     }
   }
   
