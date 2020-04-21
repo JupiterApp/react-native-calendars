@@ -35,7 +35,7 @@ const WEEK_HEIGHT = 46;
 const KNOB_CONTAINER_HEIGHT = 20;
 const HEADER_HEIGHT = 35;
 const DAY_NAMES_PADDING = 24;
-const SCHEDULE_CLOSED_HEIGHT = 70;
+const SCHEDULE_CLOSED_HEIGHT = 55;
 
 /**
  * @description: Expandable calendar component
