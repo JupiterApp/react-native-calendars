@@ -29,7 +29,7 @@ const POSITIONS = {
   OPEN: 'open'
 };
 const SPEED = 20;
-const BOUNCINESS = 6;
+const BOUNCINESS = 1;
 const CLOSED_HEIGHT = 120; // header + 1 week
 const WEEK_HEIGHT = 46;
 const KNOB_CONTAINER_HEIGHT = 20;
@@ -64,8 +64,8 @@ class ExpandableCalendar extends Component {
     disableWeekScroll: PropTypes.bool,
     /** custom calendar mode enums from Jupiter */
     calendarMode: PropTypes.oneOf(['appointment', 'schedule', 'timeSelection']),
-    /** custom selected date handler from Jupiter */
-    selectedDate: PropTypes.string
+    selectedDate: PropTypes.string,
+    onDayPressAnimationFinished: PropTypes.func
   }
 
   static defaultProps = {
@@ -288,7 +288,7 @@ class ExpandableCalendar extends Component {
 
   /** Animated */
   
-  bounceToPosition(toValue) {  
+  bounceToPosition(toValue, callback) {  
     if (!this.props.disablePan) {  
       const {deltaY} = this.state;
       const threshold = this.openHeight / 1.75;
@@ -305,7 +305,7 @@ class ExpandableCalendar extends Component {
         toValue: this._height,
         speed: SPEED,
         bounciness: BOUNCINESS
-      }).start(this.onAnimatedFinished);
+      }).start(callback);
 
       this.setPosition();
       this.closeHeader(isOpen);
@@ -316,6 +316,7 @@ class ExpandableCalendar extends Component {
   onAnimatedFinished = ({finished}) => {
     if (finished) {
       // this.setPosition();
+    
     }
   }
 
@@ -358,7 +359,8 @@ class ExpandableCalendar extends Component {
     
     setTimeout(() => { // to allows setDate to be completed
       if (this.state.position === POSITIONS.OPEN) {
-        this.bounceToPosition(this.closedHeight);
+        const callback = ({finished}) => { if (finished && this.props.onDayPressAnimationFinished) this.props.onDayPressAnimationFinished(); };
+        this.bounceToPosition(this.closedHeight, callback);
       }
     }, 0);
   }
