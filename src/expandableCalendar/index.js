@@ -139,7 +139,7 @@ class ExpandableCalendar extends Component {
     }
 
     if (prevProps.selectedDate !== this.props.selectedDate) {
-      _.invoke(this.props.context, 'setDate', this.props.selectedDate, UPDATE_SOURCES.DAY_PRESS); 
+      _.invoke(this.props.context, 'setDate', this.props.selectedDate, UPDATE_SOURCES.WEEK_SCROLL); 
     }
   }
   
