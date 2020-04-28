@@ -47,7 +47,8 @@ class WeekCalendar extends Component {
     this.page = NUMBER_OF_PAGES;
 
     this.state = {
-      items: this.getDatesArray()
+      items: this.getDatesArray(),
+      initialScrollIndex: null
     };
   }
 
@@ -68,6 +69,7 @@ class WeekCalendar extends Component {
     const {updateSource, date} = this.props.context;
     
     if (date !== prevProps.context.date && updateSource !== UPDATE_SOURCES.WEEK_SCROLL) {
+      let currentDateIdx = 0;
       const items = this.getDatesArray();
       this.setState({items});
       const days = items.map(block => this.getWeek(block));
@@ -198,9 +200,11 @@ class WeekCalendar extends Component {
     const newPage = Math.round(x / this.containerWidth);
     
     if (this.page !== newPage) {
-      const {items} = this.state;
+      const {items, initialScrollIndex} = this.state;
       this.page = newPage;
 
+
+      if (!initialScrollIndex) return this.setState({initialScrollIndex: this.page});
       _.invoke(this.props.context, 'setDate', items[this.page], UPDATE_SOURCES.WEEK_SCROLL);
 
       // if (this.page === items.length - 1) {
