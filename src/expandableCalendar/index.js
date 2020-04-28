@@ -20,7 +20,6 @@ import Calendar from '../calendar';
 import asCalendarConsumer from './asCalendarConsumer';
 import WeekCalendar from './weekCalendar';
 import Week from './week';
-import CustomWeekCalendar from './customWeekCalendar';
 
 const commons = require('./commons');
 const UPDATE_SOURCES = commons.UPDATE_SOURCES;
@@ -449,7 +448,7 @@ class ExpandableCalendar extends Component {
   renderWeekCalendar() {
     const {position} = this.state;
     const {calendarMode, disableWeekScroll} = this.props;
-    const WeekComponent = calendarMode === 'schedule' ? CustomWeekCalendar : disableWeekScroll ? Week : WeekCalendar;
+    const WeekComponent = calendarMode === 'schedule' ? <View/> : disableWeekScroll ? Week : WeekCalendar;
 
     return (
       <Animated.View
