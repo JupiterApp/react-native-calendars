@@ -51,6 +51,19 @@ class WeekCalendar extends Component {
     };
   }
 
+  getInitialScrollIndex = () => {
+    let currentDateIdx = 0;
+    const items = this.getDatesArray();
+    const days = items.map(block => this.getWeek(block));
+    days.forEach((dayArr, idx) => {
+      if (dayArr.find(day => sameDate(XDate(this.props.context.date), day))) {
+        currentDateIdx = idx;
+      }
+    });
+    return currentDateIdx;
+  }
+
+
   componentDidUpdate(prevProps) {
     const {updateSource, date} = this.props.context;
     
@@ -297,6 +310,7 @@ class WeekCalendar extends Component {
           onMomentumScrollEnd={this.onMomentumScrollEnd}
           bounces={false}
           style={{width: this.containerWidth}}
+          initialScrollIndex={this.getInitialScrollIndex()}
           // snapToInterval={35}
           // decelerationRate={0}
           // snapToAlignment={'center'}

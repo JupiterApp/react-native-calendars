@@ -25,7 +25,7 @@ class CalendarProvider extends Component {
 
   static propTypes = {
     /** Initial date in 'yyyy-MM-dd' format. Default = Date() */
-    date: PropTypes.any.isRequired,
+    date: PropTypes.any,
     /** Callback for date change event */
     onDateChanged: PropTypes.func,
     /** Callback for month change event */
@@ -45,7 +45,7 @@ class CalendarProvider extends Component {
     this.style = styleConstructor(props.theme);
 
     this.state = {
-      date: this.props.date || XDate().toString('yyyy-MM-dd'),
+      date: this.props.selectedDate || XDate().toString('yyyy-MM-dd'),
       updateSource: UPDATE_SOURCES.CALENDAR_INIT,
       buttonY: new Animated.Value(-props.todayBottomMargin || -TOP_POSITION),
       buttonIcon: this.getButtonIcon(props.date),
@@ -55,8 +55,8 @@ class CalendarProvider extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.date !== this.props.date) {
-      this.setDate(this.props.date, UPDATE_SOURCES.PROP_UPDATE);
+    if (prevProps.selectedDate !== this.props.selectedDate) {
+      this.setDate(this.props.selectedDate, UPDATE_SOURCES.PROP_UPDATE);
     }
   }
   
