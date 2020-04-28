@@ -203,7 +203,7 @@ class CalendarList extends Component {
       this.props.onVisibleMonthsChange(visibleMonths);
     }
 
-    if (this.props.onMonthChange) {
+    if (this.props.onMonthChange && this.props.calendarMode !== 'timeSelection') {
       this.props.onMonthChange(parseDate(visibleMonths[0]));
     }
 
