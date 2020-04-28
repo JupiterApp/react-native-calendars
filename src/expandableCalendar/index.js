@@ -28,7 +28,7 @@ const POSITIONS = {
   OPEN: 'open'
 };
 const SPEED = 20;
-const BOUNCINESS = 1;
+const BOUNCINESS = 0.5;
 const CLOSED_HEIGHT = 120; // header + 1 week
 const WEEK_HEIGHT = 46;
 const KNOB_CONTAINER_HEIGHT = 20;
@@ -354,14 +354,16 @@ class ExpandableCalendar extends Component {
   }
 
   onDayPress = (value) => { // {year: 2019, month: 4, day: 22, timestamp: 1555977600000, dateString: "2019-04-23"}
+    if (this.props.onDayPressAnimationFinished) this.props.onDayPressAnimationFinished(value.dateString);
     _.invoke(this.props.context, 'setDate', value.dateString, UPDATE_SOURCES.DAY_PRESS); 
     
     setTimeout(() => { // to allows setDate to be completed
       if (this.state.position === POSITIONS.OPEN) {
-        const callback = ({finished}) => { if (finished && this.props.onDayPressAnimationFinished) this.props.onDayPressAnimationFinished(); };
+        const callback = () => {};
+        // const callback = ({finished}) => { if (finished && this.props.onDayPressAnimationFinished) this.props.onDayPressAnimationFinished(); };
         this.bounceToPosition(this.closedHeight, callback);
       }
-    }, 0);
+    }, 5);
   }
 
   onVisibleMonthsChange = (value) => {
