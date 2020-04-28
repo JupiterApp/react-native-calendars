@@ -74,6 +74,7 @@ class Day extends Component {
       }
       dotStyle.push(this.style.selectedDot);
       textStyle.push(this.style.selectedText);
+      if (this.props.state === 'today') containerStyle.push(this.style.today);
     } else if (isDisabled) {
       textStyle.push(this.style.disabledText);
     } else if (this.props.state === 'today') {
@@ -83,6 +84,7 @@ class Day extends Component {
     } else if (this.props.state === '_disabled') {
       textStyle.push(this.style.extraDisabledText);
     }
+
 
     return (
       <View>
@@ -99,7 +101,6 @@ class Day extends Component {
           <Text allowFontScaling={false} style={textStyle}>{String(this.props.children)}</Text>
           {dot}
         </TouchableOpacity>
-        <View style={todayIndicatorStyle}/>
       </View>
     );
   }
