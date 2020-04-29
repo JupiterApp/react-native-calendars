@@ -31,7 +31,8 @@ export default function styleConstructor(theme={}) {
       backgroundColor: appStyle.todayBackgroundColor,
       borderRadius: 50,
       position: 'absolute',
-      left: -2.5,
+      left: -3,
+      top: -1.5,
       width: 36,
       height: 36,
       zIndex: -1

@@ -35,6 +35,7 @@ const KNOB_CONTAINER_HEIGHT = 20;
 const HEADER_HEIGHT = 35;
 const DAY_NAMES_PADDING = 24;
 const SCHEDULE_CLOSED_HEIGHT = 55;
+const MINIMUM_KNOB_DISTANCE = 1;
 
 /**
  * @description: Expandable calendar component
@@ -259,7 +260,12 @@ class ExpandableCalendar extends Component {
       // disable pan detection to limit to closed height
       return false;
     }
-    return gestureState.dy > 5 || gestureState.dy < -5;
+
+    if (this.state.position === POSITIONS.OPEN) {
+      if (gestureState.dy < -MINIMUM_KNOB_DISTANCE * 20) return true;
+      return false;
+    }
+    return gestureState.dy > MINIMUM_KNOB_DISTANCE || gestureState.dy < -MINIMUM_KNOB_DISTANCE;
   };
   handlePanResponderGrant = () => {
   
