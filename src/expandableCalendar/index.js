@@ -533,7 +533,7 @@ class ExpandableCalendar extends Component {
           :
           <Animated.View 
             ref={e => {this.wrapper = e;}}
-            style={{height: deltaY}} 
+            style={{height: deltaY, zIndex: 2}} 
             {...this.panResponder.panHandlers}
           >
             <CalendarList
