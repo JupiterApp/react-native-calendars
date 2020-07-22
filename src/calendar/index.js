@@ -334,9 +334,11 @@ class Calendar extends Component {
           disableArrowLeft={this.props.disableArrowLeft}
           disableArrowRight={this.props.disableArrowRight}
           markedDates={this.props.markedDates}
+          centerLabel={this.props.centerLabel}
+          customMonthLabel={this.props.customMonthLabel}
         />
 
-        <View style={this.style.monthView}>{weeks}</View>
+        <View style={[this.style.monthView, this.props.customMonthViewStyle]}>{weeks}</View>
       </View>);
   }
 }

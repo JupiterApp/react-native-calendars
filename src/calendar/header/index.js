@@ -25,7 +25,9 @@ class CalendarHeader extends Component {
     onPressArrowRight: PropTypes.func,
     disableArrowLeft: PropTypes.bool,
     disableArrowRight: PropTypes.bool,
-    webAriaLevel: PropTypes.number
+    webAriaLevel: PropTypes.number,
+    centerLabel: PropTypes.bool,
+    customMonthLabel: PropTypes.any
   };
 
   static defaultProps = {
@@ -117,7 +119,7 @@ class CalendarHeader extends Component {
           onPress={this.onPressLeft}
           disabled={this.props.disableArrowLeft}
           style={this.style.arrow}
-          hitSlop={{left: 20, right: 20, top: 20, bottom: 20}}
+          hitSlop={{left: 20, right: 0, top: 20, bottom: 20}}
           testID={testID ? `${CHANGE_MONTH_LEFT_ARROW}-${testID}`: CHANGE_MONTH_LEFT_ARROW}
         >
           {this.props.renderArrow
@@ -133,7 +135,7 @@ class CalendarHeader extends Component {
           onPress={this.onPressRight}
           disabled={this.props.disableArrowRight}
           style={this.style.arrow}
-          hitSlop={{left: 20, right: 20, top: 20, bottom: 20}}
+          hitSlop={{left: 0, right: 20, top: 20, bottom: 20}}
           testID={testID ? `${CHANGE_MONTH_RIGHT_ARROW}-${testID}`: CHANGE_MONTH_RIGHT_ARROW}
         >
           {this.props.renderArrow
@@ -166,20 +168,39 @@ class CalendarHeader extends Component {
         accessibilityElementsHidden={this.props.accessibilityElementsHidden} // iOS
         importantForAccessibility={this.props.importantForAccessibility} // Android
       >
-        <View style={this.style.header}>
-          {leftArrow}
-          <View style={{flexDirection: 'row'}}>
-            <Text
-              allowFontScaling={false}
-              style={this.style.monthText}
-              {...webProps}
-            >
-              {this.props.month.toString(this.props.monthFormat)}
-            </Text>
-            {indicator}
+        {this.props.centerLabel ? (
+          <View style={this.style.header}>
+            {leftArrow}
+            <View style={{flexDirection: 'row'}}>
+              <Text
+                allowFontScaling={false}
+                style={this.style.monthText}
+                {...webProps}
+              >
+                {this.props.month.toString(this.props.monthFormat)}
+              </Text>
+              {indicator}
+            </View>
+            {rightArrow}
           </View>
-          {rightArrow}
-        </View>
+        ) : (
+          <View style={this.style.header}>
+            {this.props.customMonthLabel ? this.props.customMonthLabel(this.props.month.toString(this.props.monthFormat)) : (
+              <Text
+                allowFontScaling={false}
+                style={this.style.monthText}
+                {...webProps}
+              >
+                {this.props.month.toString(this.props.monthFormat)}
+              </Text>
+            )}
+            {indicator} 
+            <View style={{flexDirection: 'row'}}>
+              {leftArrow}
+              {rightArrow}
+            </View>
+          </View>
+        )}
         {!this.props.hideDayNames &&
           <View style={this.style.week}>
             {this.props.weekNumbers && 
